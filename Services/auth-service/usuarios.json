@@ -3,5 +3,10 @@
     "email": "eloise.11660210@aluno.mg.gov.br",
     "password": null,
     "tipo": "aluno"
+  },
+  {
+    "email": "christian.7575724@aluno.mg.gov.br",
+    "password": null,
+    "tipo": "aluno"
   }
 ]
