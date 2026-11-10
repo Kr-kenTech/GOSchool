@@ -1,0 +1,26 @@
+{
+  "name": "@goschool/shared",
+  "version": "1.0.0",
+  "description": "Shared library for GOSchool microservices",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "npx jest --coverage",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "mysql2": "^3.9.0",
+    "mongodb": "^6.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "cookie-parser": "^1.4.6",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@goschool/design-system",
+  "version": "1.0.0",
+  "description": "GOSchool Design System - CSS Tokens and Components",
+  "main": "design-system.css",
+  "style": "design-system.css",
+  "files": [
+    "design-system.css",
+    "tokens.css",
+    "components.css"
+  ],
+  "scripts": {
+    "build": "echo 'CSS only package - no build needed'",
+    "lint": "stylelint *.css"
+  },
+  "keywords": [
+    "design-system",
+    "css",
+    "tokens",
+    "components",
+    "goschool"
+  ],
+  "author": "GOSchool Team",
+  "license": "MIT"
+}

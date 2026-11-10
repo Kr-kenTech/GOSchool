@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOSchool - Painel Administrativo</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Admin/adm.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+<body>
+    <!-- SIDEBAR DO ADMIN -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GOSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="/Admin/" class="menu-item active" id="nav-dashboard">Dashboard</a>
+            <a href="/Cardapio/" class="menu-item" id="nav-cardapio">Cardápio</a>
+            <a href="/Reservas/" class="menu-item" id="nav-reservas">Reservas</a>
+            <a href="/Desperdicio/" class="menu-item" id="nav-desperdicio">Desperdício</a>
+            <a href="/Configuracoes/" class="menu-item" id="nav-config">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon" aria-hidden="true">🛡️</div>
+                <span id="sidebarUserName" data-auth-user="name">Olá, Admin!</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon" aria-hidden="true">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+
+    <!-- CONTEÚDO PRINCIPAL DO ADMIN -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="header-title">
+                <h1 id="saudacao-usuario">Painel Administrativo</h1>
+                <p>Gerenciamento completo do GOSchool</p>
+            </div>
+
+            <div class="header-actions">
+                <div class="user-profile" id="userProfile" role="button" tabindex="0" aria-label="Perfil do usuário" aria-expanded="false" aria-haspopup="true">
+                    <div class="avatar" id="userAvatar" aria-hidden="true">A</div>
+                    <span class="user-name" id="userName">Admin</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                </div>
+                <div class="user-dropdown" id="userDropdown" hidden role="menu">
+                    <button class="dropdown-item" role="menuitem" data-action="perfil">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Perfil
+                    </button>
+                    <button class="dropdown-item" role="menuitem" id="dropdownConfig">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        Configurações
+                    </button>
+                    <hr class="dropdown-divider">
+                    <button class="dropdown-item dropdown-danger" role="menuitem" id="btn-logout-dropdown">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- KPI Cards -->
+            <section class="kpi-section" aria-labelledby="kpi-title">
+                <h2 id="kpi-title" class="visually-hidden">Indicadores Principais</h2>
+                <div class="kpi-grid" id="kpi-grid">
+                    <article class="kpi-card">
+                        <div class="kpi-icon blue">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <p class="kpi-value" id="kpi-total-usuarios">—</p>
+                            <p class="kpi-label">Total de Usuários</p>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card">
+                        <div class="kpi-icon green">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <p class="kpi-value" id="kpi-usuarios-ativos">—</p>
+                            <p class="kpi-label">Usuários Ativos (30d)</p>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card">
+                        <div class="kpi-icon amber">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <p class="kpi-value" id="kpi-total-reservas">—</p>
+                            <p class="kpi-label">Total de Reservas</p>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card">
+                        <div class="kpi-icon purple">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <p class="kpi-value" id="kpi-desperdicio-mes">— kg</p>
+                            <p class="kpi-label">Desperdício do Mês</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Gráfico de Usuários por Role -->
+            <section class="dashboard-section" aria-labelledby="usuarios-role-title">
+                <header class="section-header">
+                    <div class="section-title-group">
+                        <span class="section-icon" aria-hidden="true">👥</span>
+                        <h2 id="usuarios-role-title">Usuários por Perfil</h2>
+                    </div>
+                </header>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Distribuição de Roles</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartRoles" width="400" height="200" aria-label="Gráfico de distribuição de usuários por role"></canvas>
+                    </div>
+                    <div class="chart-legend" id="chartRolesLegend"></div>
+                </div>
+            </section>
+
+            <!-- Tabela de Usuários Recentes -->
+            <section class="dashboard-section" aria-labelledby="usuarios-recentes-title">
+                <header class="section-header">
+                    <div class="section-title-group">
+                        <span class="section-icon" aria-hidden="true">📋</span>
+                        <h2 id="usuarios-recentes-title">Usuários Recentes</h2>
+                    </div>
+                    <a href="/Admin/usuarios" class="btn-secondary btn-sm">Gerenciar Todos</a>
+                </header>
+
+                <div class="table-responsive">
+                    <table class="data-table" id="usuarios-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Último Acesso</th>
+                                <th scope="col">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuarios-tbody">
+                            <tr>
+                                <td colspan="6" class="table-loading">Carregando usuários...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal-overlay" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-box">
+            <header class="modal-header">
+                <h3 id="modalTitle" class="modal-title">Confirmar Ação</h3>
+                <button class="modal-close" id="modalClose" aria-label="Fechar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p id="modalMessage">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn-secondary" id="modalCancel">Cancelar</button>
+                <button class="btn-danger" id="modalConfirm">Confirmar</button>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Inicialização da autenticação - apenas para perfil adm
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['adm']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            const logoutDropdown = document.getElementById('btn-logout-dropdown');
+            if (logoutBtn) logoutBtn.addEventListener('click', () => Auth.logout());
+            if (logoutDropdown) logoutDropdown.addEventListener('click', () => Auth.logout());
+
+            // Configurar dropdown do usuário
+            inicializarUserDropdown();
+
+            // Configurar modal
+            inicializarModal();
+
+            // Carregar dados do dashboard
+            await carregarKPIs();
+            await carregarChartRoles();
+            await carregarUsuariosRecentes();
+
+            // Inicializar sidebar mobile
+            inicializarSidebarMobile();
+        });
+
+        // Dropdown do usuário
+        function inicializarUserDropdown() {
+            const profileBtn = document.getElementById('userProfile');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (!profileBtn || !dropdown) return;
+
+            profileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = !dropdown.hidden;
+                dropdown.hidden = isOpen;
+                profileBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.hidden = true;
+                    profileBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            dropdown.querySelectorAll('[data-action]').forEach(item => {
+                item.addEventListener('click', () => {
+                    const action = item.dataset.action;
+                    if (action === 'perfil') window.location.href = '/Configuracoes/';
+                    if (action === 'config') window.location.href = '/Configuracoes/';
+                });
+            });
+        }
+
+        // Modal
+        function inicializarModal() {
+            const modal = document.getElementById('confirmModal');
+            const closeBtn = document.getElementById('modalClose');
+            const cancelBtn = document.getElementById('modalCancel');
+            const confirmBtn = document.getElementById('modalConfirm');
+
+            let resolveCallback = null;
+
+            function closeModal() {
+                modal.hidden = true;
+                if (resolveCallback) {
+                    resolveCallback(false);
+                    resolveCallback = null;
+                }
+            }
+
+            closeBtn?.addEventListener('click', closeModal);
+            cancelBtn?.addEventListener('click', closeModal);
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            confirmBtn?.addEventListener('click', () => {
+                if (resolveCallback) {
+                    resolveCallback(true);
+                    resolveCallback = null;
+                }
+                modal.hidden = true;
+            });
+
+            window.confirmAction = function(message) {
+                return new Promise((resolve) => {
+                    document.getElementById('modalMessage').textContent = message;
+                    modal.hidden = false;
+                    resolveCallback = resolve;
+                });
+            };
+        }
+
+        async function carregarKPIs() {
+            try {
+                const [usuariosRes, reservasRes, desperdicioRes] = await Promise.all([
+                    Auth.apiCall('/api/admin/usuarios/stats'),
+                    Auth.apiCall('/api/admin/reservas/stats'),
+                    Auth.apiCall('/api/desperdicio/stats?periodo=mes')
+                ]);
+
+                if (usuariosRes.ok) {
+                    const data = await usuariosRes.json();
+                    if (data.sucesso) {
+                        document.getElementById('kpi-total-usuarios').textContent = data.total || '—';
+                        document.getElementById('kpi-usuarios-ativos').textContent = data.ativos_30d || '—';
+                    }
+                }
+
+                if (reservasRes.ok) {
+                    const data = await reservasRes.json();
+                    if (data.sucesso) {
+                        document.getElementById('kpi-total-reservas').textContent = data.total || '—';
+                    }
+                }
+
+                if (desperdicioRes.ok) {
+                    const data = await desperdicioRes.json();
+                    if (data.sucesso) {
+                        document.getElementById('kpi-desperdicio-mes').textContent =
+                            (data.total_kg || 0).toLocaleString('pt-BR') + ' kg';
+                    }
+                }
+            } catch (err) {
+                console.error('[Admin] Erro ao carregar KPIs:', err);
+            }
+        }
+
+        async function carregarChartRoles() {
+            try {
+                const res = await Auth.apiCall('/api/admin/usuarios/por-role');
+                if (!res.ok) throw new Error('Erro ao carregar roles');
+
+                const data = await res.json();
+                if (data.sucesso && data.roles) {
+                    desenharGraficoRoles(data.roles);
+                }
+            } catch (err) {
+                console.error('[Admin] Erro ao carregar chart roles:', err);
+            }
+        }
+
+        function desenharGraficoRoles(roles) {
+            const canvas = document.getElementById('chartRoles');
+            const legend = document.getElementById('chartRolesLegend');
+            if (!canvas || !legend) return;
+
+            const ctx = canvas.getContext('2d');
+            const labels = Object.keys(roles);
+            const values = Object.values(roles);
+            const total = values.reduce((a, b) => a + b, 0);
+
+            if (total === 0) {
+                legend.innerHTML = '<p class="table-empty">Nenhum usuário cadastrado</p>';
+                return;
+            }
+
+            const colors = ['#7c3aed', '#2563eb', '#f59e0b', '#10b981', '#ef4444'];
+            const roleLabels = {
+                'aluno': 'Alunos',
+                'professor': 'Professores',
+                'adm': 'Administradores'
+            };
+
+            // Configurar canvas para DPR
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const cssWidth = rect.width;
+            const cssHeight = rect.height;
+            const centerX = cssWidth / 2;
+            const centerY = cssHeight / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+            const innerRadius = radius * 0.55;
+
+            ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+            let currentAngle = -Math.PI / 2;
+
+            values.forEach((value, i) => {
+                const sliceAngle = (value / total) * Math.PI * 2;
+                const color = colors[i % colors.length];
+
+                // Desenhar fatia
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Label na fatia se for grande o suficiente
+                if (sliceAngle > 0.4) {
+                    const labelAngle = currentAngle + sliceAngle / 2;
+                    const labelX = centerX + Math.cos(labelAngle) * (radius + innerRadius) / 2;
+                    const labelY = centerY + Math.sin(labelAngle) * (radius + innerRadius) / 2;
+
+                    ctx.font = 'bold 12px var(--gs-font-sans)';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const label = roleLabels[labels[i]] || labels[i];
+                    ctx.fillText(label, labelX, labelY);
+                }
+
+                currentAngle += sliceAngle;
+            });
+
+            // Texto central
+            ctx.font = 'bold 20px var(--gs-font-sans)';
+            ctx.fillStyle = getCSSVar('--gs-text-primary', '#1e293b');
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${total}`, centerX, centerY - 5);
+
+            ctx.font = '12px var(--gs-font-sans)';
+            ctx.fillStyle = getCSSVar('--gs-text-secondary', '#64748b');
+            ctx.fillText('Total usuários', centerX, centerY + 15);
+
+            // Legenda
+            legend.innerHTML = '';
+            labels.forEach((label, i) => {
+                const color = colors[i % colors.length];
+                const percent = ((values[i] / total) * 100).toFixed(1);
+                const displayLabel = roleLabels[label] || label;
+
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.style.cssText = 'display:inline-flex;align-items:center;gap:8px;padding:8px 12px;';
+                item.innerHTML = `
+                    <span style="width:12px;height:12px;border-radius:3px;background:${color};flex-shrink:0;"></span>
+                    <span style="font-size:13px;color:var(--gs-text-primary);">${displayLabel}</span>
+                    <span style="font-size:12px;color:var(--gs-text-secondary);">(${percent}%)</span>
+                `;
+                legend.appendChild(item);
+            });
+        }
+
+        async function carregarUsuariosRecentes() {
+            try {
+                const res = await Auth.apiCall('/api/admin/usuarios?limit=10&order=created_desc');
+                if (!res.ok) throw new Error('Erro ao carregar usuários');
+
+                const data = await res.json();
+                const tbody = document.getElementById('usuarios-tbody');
+
+                if (data.sucesso && data.usuarios && data.usuarios.length > 0) {
+                    tbody.innerHTML = data.usuarios.map(u => `
+                        <tr>
+                            <td>${escapeHtml(u.nome)}</td>
+                            <td>${escapeHtml(u.email)}</td>
+                            <td><span class="role-badge role-${u.role}">${formatRole(u.role)}</span></td>
+                            <td><span class="status-badge status-${u.ativo ? 'ativo' : 'inativo'}">${u.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                            <td>${formatDate(u.ultimo_acesso)}</td>
+                            <td>
+                                <button class="btn-secondary btn-sm" onclick="editarUsuario('${u.id}')">Editar</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Nenhum usuário encontrado</td></tr>';
+                }
+            } catch (err) {
+                console.error('[Admin] Erro ao carregar usuários:', err);
+                document.getElementById('usuarios-tbody').innerHTML =
+                    '<tr><td colspan="6" class="table-empty">Erro ao carregar usuários</td></tr>';
+            }
+        }
+
+        function editarUsuario(id) {
+            window.location.href = `/Admin/usuario/${id}`;
+        }
+
+        function formatRole(role) {
+            const labels = {
+                'aluno': 'Aluno',
+                'professor': 'Professor',
+                'adm': 'Admin'
+            };
+            return labels[role] || role;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Nunca';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            } catch {
+                return dateStr;
+            }
+        }
+
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '"')
+                .replace(/'/g, '&#039;');
+        }
+
+        function getCSSVar(varName, fallback) {
+            try {
+                const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+                return value || fallback;
+            } catch {
+                return fallback;
+            }
+        }
+
+        // Sidebar Mobile
+        function inicializarSidebarMobile() {
+            const hamburger = document.getElementById('hamburgerBtn');
+            const overlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('sidebar');
+
+            if (hamburger) {
+                hamburger.addEventListener('click', toggleSidebar);
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', closeSidebar);
+            }
+
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+
+            if (sidebar && overlay && hamburger) {
+                const isOpen = sidebar.classList.toggle('open');
+                overlay.hidden = !isOpen;
+                hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.hidden = true;
+            if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
+        }
+    </script>
+</body>
+</html>

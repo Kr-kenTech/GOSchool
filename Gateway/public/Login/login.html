@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOSchool - Login Institucional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Login/login.css">
+    <script src="/theme.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="/auth.js"></script>
+</head>
+<body>
+    <a href="/Inicio/" class="btn-voltar" aria-label="Voltar à página inicial">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Voltar</span>
+    </a>
+
+    <main class="login-main">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo-container">
+                    <img src="/logo-simplificada.png" alt="Logo GOSchool" class="login-logo">
+                </div>
+                <h1 class="login-title">GOSchool</h1>
+                <p class="login-subtitle">Utilize sua conta institucional para entrar</p>
+            </div>
+
+            <!-- Login tradicional (e-mail + senha) -->
+            <form id="form-login" class="login-form" novalidate>
+                <div class="form-group">
+                    <label for="email-login" class="form-label">E-mail institucional</label>
+                    <input type="email" id="email-login" name="email" class="form-input"
+                        placeholder="seu@educacao.mg.gov.br" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="senha-login" class="form-label">Senha</label>
+                    <input type="password" id="senha-login" name="senha" class="form-input"
+                        placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary btn-login">Entrar</button>
+                <p id="msg-erro-login" class="error-message" aria-live="polite"></p>
+            </form>
+
+            <!-- Google Sign-In -->
+            <div class="divider">
+                <span>ou</span>
+            </div>
+
+            <div class="google-container">
+                <div id="g_id_onload"
+                    data-client_id="520168549437-g54j16ubajpiqcq675t9gf9eigta7pmq.apps.googleusercontent.com"
+                    data-login_uri="http://localhost:3000/auth/google/callback"
+                    data-auto_prompt="false">
+                </div>
+
+                <div class="g_id_signin"
+                    data-type="standard"
+                    data-size="large"
+                    data-theme="outline"
+                    data-text="sign_in_with"
+                    data-shape="pill"
+                    data-logo_alignment="left">
+                </div>
+            </div>
+
+            <div class="ajuda-cadastro">
+                <p class="ajuda-text">Primeiro acesso?</p>
+                <p class="ajuda-desc">Basta clicar no botão acima e selecionar o seu e-mail institucional <strong>(@aluno.mg.gov.br ou @educacao.mg.gov.br)</strong>. Seu cadastro será feito automaticamente.</p>
+            </div>
+
+            <!-- Demo Mode Login -->
+            <div id="demo-login" class="demo-login" hidden>
+                <hr class="demo-divider">
+                <p class="demo-label">Modo Demonstração</p>
+                <p class="demo-desc">Clique em um perfil abaixo para entrar como demonstração:</p>
+                <div class="demo-buttons">
+                    <button type="button" class="demo-btn" data-email="admin@demo.goschool" data-role="adm">
+                        <span class="demo-btn-icon" aria-hidden="true">👑</span>
+                        <span class="demo-btn-text">
+                            <strong>Administrador</strong>
+                            <small>admin@demo.goschool</small>
+                        </span>
+                    </button>
+                    <button type="button" class="demo-btn" data-email="professor@demo.goschool" data-role="professor">
+                        <span class="demo-btn-icon" aria-hidden="true">👨‍🏫</span>
+                        <span class="demo-btn-text">
+                            <strong>Professor</strong>
+                            <small>professor@demo.goschool</small>
+                        </span>
+                    </button>
+                    <button type="button" class="demo-btn" data-email="aluno@demo.goschool" data-role="aluno">
+                        <span class="demo-btn-icon" aria-hidden="true">🎒</span>
+                        <span class="demo-btn-text">
+                            <strong>Aluno</strong>
+                            <small>aluno@demo.goschool</small>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    // Verificar se modo demo está disponível e configurar botões
+    document.addEventListener('DOMContentLoaded', async () => {
+        const demoLoginDiv = document.getElementById('demo-login');
+        const demoButtons = demoLoginDiv.querySelectorAll('.demo-btn');
+
+        // Verificar se backend suporta demo mode
+        try {
+            const res = await fetch('/api/login/demo', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: 'test' })
+            });
+            // Se o endpoint existe (mesmo que retorne 401/400), modo demo está ativo
+            if (res.status !== 404) {
+                demoLoginDiv.hidden = false;
+            }
+        } catch (e) {
+            // Silencioso - demo não disponível
+        }
+
+        // Configurar botões de demo login
+        demoButtons.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const email = btn.dataset.email;
+                btn.disabled = true;
+                btn.innerHTML = `<span class="demo-btn-icon">${btn.querySelector('.demo-btn-icon').textContent}</span><span class="demo-btn-text">Entrando...</span>`;
+
+                try {
+                    await Auth.demoLogin(email);
+                    // Auth.demoLogin já faz o redirect
+                } catch (err) {
+                    alert('Erro no login demo: ' + err.message);
+                    btn.disabled = false;
+                    // Restaurar texto original
+                    const role = btn.dataset.role;
+                    const labels = {
+                        'adm': { icon: '👑', text: '<strong>Administrador</strong><small>admin@demo.goschool</small>' },
+                        'professor': { icon: '👨‍🏫', text: '<strong>Professor</strong><small>professor@demo.goschool</small>' },
+                        'aluno': { icon: '🎒', text: '<strong>Aluno</strong><small>aluno@demo.goschool</small>' }
+                    };
+                    btn.innerHTML = `<span class="demo-btn-icon">${labels[role].icon}</span><span class="demo-btn-text">${labels[role].text}</span>`;
+                }
+            });
+        });
+
+        // Login tradicional (e-mail + senha) -> POST /api/login
+        const formLogin = document.getElementById('form-login');
+        if (formLogin) {
+            formLogin.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email-login').value.trim();
+                const senha = document.getElementById('senha-login').value;
+                const btn = formLogin.querySelector('button[type="submit"]');
+                const msg = document.getElementById('msg-erro-login');
+                msg.textContent = '';
+                msg.style.display = 'none';
+                btn.disabled = true;
+                btn.textContent = 'Entrando...';
+                try {
+                    await Auth.login(email, senha);
+                } catch (err) {
+                    msg.textContent = err.message || 'E-mail ou senha incorretos.';
+                    msg.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Entrar';
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>
