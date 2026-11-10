@@ -1,0 +1,192 @@
+# ==========================================
+# GOSchool — Docker Compose
+# Orquestração dos 3 microsserviços + MySQL + MongoDB
+# ==========================================
+
+services:
+  # ----------------------------------------
+  # MySQL Database
+  # ----------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: goschool-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-banco_goschool}
+      MYSQL_USER: ${MYSQL_USER:-goschool}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-goschool123}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/mysql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/mysql/seeds:/docker-entrypoint-initdb.d/seeds:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - goschool-network
+    restart: unless-stopped
+
+  # ----------------------------------------
+  # MongoDB Database
+  # ----------------------------------------
+  mongo:
+    image: mongo:7
+    container_name: goschool-mongo
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-banco_goschool}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
+    volumes:
+      - mongo_data:/data/db
+      - ./database/mongo/indexes.js:/docker-entrypoint-initdb.d/indexes.js:ro
+      - ./database/mongo/seeds:/docker-entrypoint-initdb.d/seeds:ro
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - goschool-network
+    restart: unless-stopped
+
+  # ----------------------------------------
+  # Gateway Service (Porta 3000)
+  # ----------------------------------------
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: goschool-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - GATEWAY_PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:4001
+      - RESERVAS_SERVICE_URL=http://reservas-service:4002
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-banco_goschool}
+      - MYSQL_USER=${MYSQL_USER:-goschool}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-goschool123}
+      - MONGO_URL=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongo:27017
+      - MONGO_DB=${MONGO_DB:-banco_goschool}
+      - JWT_SECRET=${JWT_SECRET}
+      - INTERNAL_SHARED_SECRET=${INTERNAL_SHARED_SECRET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      reservas-service:
+        condition: service_started
+    networks:
+      - goschool-network
+    restart: unless-stopped
+
+  # ----------------------------------------
+  # Auth Service (Porta 4001)
+  # ----------------------------------------
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: goschool-auth
+    expose:
+      - "4001"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - AUTH_PORT=4001
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-banco_goschool}
+      - MYSQL_USER=${MYSQL_USER:-goschool}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-goschool123}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-15m}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - INTERNAL_SHARED_SECRET=${INTERNAL_SHARED_SECRET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_FROM=${EMAIL_FROM:-noreply@goschool.edu.br}
+      - CONSENT_EXPIRY_HOURS=${CONSENT_EXPIRY_HOURS:-72}
+      - DEMO_MODE=${DEMO_MODE:-false}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - goschool-network
+    restart: unless-stopped
+
+  # ----------------------------------------
+  # Reservas Service (Porta 4002)
+  # ----------------------------------------
+  reservas-service:
+    build:
+      context: ./reservas-service
+      dockerfile: Dockerfile
+    container_name: goschool-reservas
+    expose:
+      - "4002"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - RESERVAS_PORT=4002
+      - MONGO_URL=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongo:27017
+      - MONGO_DB=${MONGO_DB:-banco_goschool}
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-banco_goschool}
+      - MYSQL_USER=${MYSQL_USER:-goschool}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-goschool123}
+      - INTERNAL_SHARED_SECRET=${INTERNAL_SHARED_SECRET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - goschool-network
+    restart: unless-stopped
+
+# ----------------------------------------
+# Volumes
+# ----------------------------------------
+volumes:
+  mysql_data:
+    driver: local
+  mongo_data:
+    driver: local
+
+# ----------------------------------------
+# Networks
+# ----------------------------------------
+networks:
+  goschool-network:
+    driver: bridge
+    name: goschool-network
