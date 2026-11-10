@@ -1,0 +1,2858 @@
+openapi: 3.1.0
+info:
+  title: GOSchool API
+  version: 1.0.0
+  description: |
+    API da plataforma GOSchool - Sistema de Gestão Escolar com arquitetura de microsserviços.
+
+    **Serviços:**
+    - **Gateway** (porta 3000): Ponto de entrada, proxy reverso, arquivos estáticos
+    - **Auth Service** (porta 4001): Autenticação, autorização, OAuth Google, consentimento LGPD/ECA
+    - **Reservas Service** (porta 4002): Reservas de refeições, controle de desperdício
+
+    **Autenticação:**
+    - JWT em cookies HttpOnly (access token: 15min, refresh token: 7d)
+    - CSRF Double-Submit Pattern (header `X-CSRF-Token` + cookie `csrf_token`)
+    - Google OAuth 2.0 com RS256
+    - Comunicação interna entre serviços: HMAC-SHA256 com proteção replay (5min)
+
+    **Roles (RBAC):**
+    - `aluno`: Acesso ao cardápio, reservas próprias, configurações pessoais
+    - `professor`: Todas as permissões de aluno + criar/cancelar reservas, ver desperdício
+    - `adm`: Acesso total + gestão de usuários, cardápio, relatórios admin
+  contact:
+    name: GOSchool Team
+    email: suporte@goschool.edu.br
+  license:
+    name: Proprietary
+    url: https://goschool.edu.br/licenca
+
+servers:
+  - url: http://localhost:3000
+    description: Desenvolvimento local (Gateway)
+  - url: https://api.goschool.edu.br
+    description: Produção
+
+security:
+  - cookieAuth: []
+  - csrfAuth: []
+
+tags:
+  - name: Auth
+    description: Autenticação, login, registro, OAuth, tokens
+  - name: Usuários
+    description: Gestão de usuários (admin)
+  - name: Cardápio
+    description: Cardápio semanal, refeições, alergias
+  - name: Reservas
+    description: Criação, listagem, cancelamento de reservas
+  - name: Desperdício
+    description: Registro e relatórios de desperdício alimentar
+  - name: Email
+    description: Envio de emails (verificação, recuperação, notificações)
+  - name: Health
+    description: Health checks dos serviços
+  - name: Consentimento
+    description: LGPD/ECA - Consentimento de responsáveis
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: JWT Access Token (HttpOnly, Secure, SameSite=Lax)
+    csrfAuth:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: CSRF Token para mutações (double-submit pattern)
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Para comunicação serviço-a-serviço (HMAC)
+    internalAuth:
+      type: apiKey
+      in: header
+      name: X-Internal-Auth
+      description: HMAC-SHA256 signature para comunicação interna
+
+  schemas:
+    # ==========================================
+    # Common Schemas
+    # ==========================================
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Dados de entrada inválidos"
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+      required: [success, error]
+
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        message:
+          type: string
+      required: [success]
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        total:
+          type: integer
+        totalPages:
+          type: integer
+      required: [page, limit, total, totalPages]
+
+    # ==========================================
+    # Auth Schemas
+    # ==========================================
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "aluno@escola.edu.br"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: "senhaSegura123"
+        rememberMe:
+          type: boolean
+          default: false
+
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/User'
+                csrfToken:
+                  type: string
+                  description: Token CSRF para próximas requisições mutativas
+
+    RegisterRequest:
+      type: object
+      required: [nome, email, password, role]
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "João Silva"
+        email:
+          type: string
+          format: email
+          example: "joao@escola.edu.br"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: "senhaSegura123"
+        role:
+          type: string
+          enum: [aluno, professor]
+          example: "aluno"
+        turma:
+          type: string
+          example: "3A"
+        responsavelEmail:
+          type: string
+          format: email
+          description: Obrigatório para alunos < 18 anos (LGPD/ECA)
+
+    RefreshTokenResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                csrfToken:
+                  type: string
+
+    GoogleAuthUrlResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                authUrl:
+                  type: string
+                  format: uri
+                state:
+                  type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "João Silva"
+        email:
+          type: string
+          format: email
+          example: "joao@escola.edu.br"
+        role:
+          type: string
+          enum: [aluno, professor, adm]
+          example: "aluno"
+        turma:
+          type: string
+          nullable: true
+          example: "3A"
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+          example: true
+        consentStatus:
+          type: string
+          enum: [pendente, concedido, recusado, expirado]
+          nullable: true
+
+    UserListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                users:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          maxLength: 100
+        role:
+          type: string
+          enum: [aluno, professor, adm]
+        turma:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+
+    # ==========================================
+    # Cardápio Schemas
+    # ==========================================
+    Refeicao:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+          example: "Arroz com Feijão"
+        descricao:
+          type: string
+          nullable: true
+        tipo:
+          type: string
+          enum: [almoco, jantar, lanche]
+          example: "almoco"
+        diaSemana:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: 0=Domingo, 1=Segunda, ..., 6=Sábado
+        alergenos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alergeno'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Alergeno:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+          example: "Glúten"
+        icone:
+          type: string
+          nullable: true
+        descricao:
+          type: string
+          nullable: true
+
+    CardapioSemanalResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                cardapio:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      diaSemana:
+                        type: integer
+                      diaNome:
+                        type: string
+                      refeicoes:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Refeicao'
+                alergenosUsuario:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Alergeno'
+
+    CreateRefeicaoRequest:
+      type: object
+      required: [nome, tipo, diaSemana]
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          maxLength: 100
+        descricao:
+          type: string
+          maxLength: 500
+        tipo:
+          type: string
+          enum: [almoco, jantar, lanche]
+        diaSemana:
+          type: integer
+          minimum: 0
+          maximum: 6
+        alergenosIds:
+          type: array
+          items:
+            type: integer
+
+    UpdateRefeicaoRequest:
+      type: object
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          maxLength: 100
+        descricao:
+          type: string
+          maxLength: 500
+        tipo:
+          type: string
+          enum: [almoco, jantar, lanche]
+        diaSemana:
+          type: integer
+          minimum: 0
+          maximum: 6
+        alergenosIds:
+          type: array
+          items:
+            type: integer
+
+    AlergenosResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                alergenos:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Alergeno'
+
+    CreateAlergenoRequest:
+      type: object
+      required: [nome]
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          maxLength: 50
+        icone:
+          type: string
+        descricao:
+          type: string
+
+    # ==========================================
+    # Reservas Schemas
+    # ==========================================
+    Reserva:
+      type: object
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId
+          example: "64f8a1b2c3d4e5f6a7b8c9d0"
+        usuarioId:
+          type: integer
+          example: 1
+        usuarioNome:
+          type: string
+          example: "João Silva"
+        refeicaoId:
+          type: integer
+          example: 5
+        refeicaoNome:
+          type: string
+          example: "Arroz com Feijão"
+        refeicaoTipo:
+          type: string
+          enum: [almoco, jantar, lanche]
+        diaSemana:
+          type: integer
+          minimum: 0
+          maximum: 6
+        dataReserva:
+          type: string
+          format: date
+          example: "2024-01-15"
+        status:
+          type: string
+          enum: [confirmada, cancelada, compareceu, nao_compareceu]
+          example: "confirmada"
+        observacoes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReservaListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                reservas:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Reserva'
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+
+    CreateReservaRequest:
+      type: object
+      required: [refeicaoId, diaSemana, dataReserva]
+      properties:
+        refeicaoId:
+          type: integer
+        diaSemana:
+          type: integer
+          minimum: 0
+          maximum: 6
+        dataReserva:
+          type: string
+          format: date
+        observacoes:
+          type: string
+          maxLength: 500
+
+    CancelReservaRequest:
+      type: object
+      properties:
+        motivo:
+          type: string
+          maxLength: 200
+
+    ReservaFilters:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [confirmada, cancelada, compareceu, nao_compareceu, todas]
+        dataInicio:
+          type: string
+          format: date
+        dataFim:
+          type: string
+          format: date
+        refeicaoTipo:
+          type: string
+          enum: [almoco, jantar, lanche]
+        usuarioId:
+          type: integer
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+
+    DashboardReservasResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                proximasReservas:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Reserva'
+                estatisticas:
+                  type: object
+                  properties:
+                    totalMes:
+                      type: integer
+                    compareceu:
+                      type: integer
+                    naoCompareceu:
+                      type: integer
+                    canceladas:
+                      type: integer
+                    taxaComparecimento:
+                      type: number
+                      format: float
+
+    # ==========================================
+    # Desperdício Schemas
+    # ==========================================
+    Desperdicio:
+      type: object
+      properties:
+        id:
+          type: string
+          description: MongoDB ObjectId
+        refeicaoId:
+          type: integer
+        refeicaoNome:
+          type: string
+        data:
+          type: string
+          format: date
+        quantidadeKg:
+          type: number
+          format: float
+          minimum: 0
+        ingredientes:
+          type: array
+          items:
+            type: object
+            properties:
+              nome:
+                type: string
+              quantidadeKg:
+                type: number
+                format: float
+              porcentagem:
+                type: number
+                format: float
+        motivo:
+          type: string
+          enum: [sobra_preparo, sobra_servida, estragado, outro]
+        observacoes:
+          type: string
+          nullable: true
+        registradoPor:
+          type: integer
+        registradoPorNome:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    DesperdicioListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                desperdicios:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Desperdicio'
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+
+    CreateDesperdicioRequest:
+      type: object
+      required: [refeicaoId, data, quantidadeKg, ingredientes, motivo]
+      properties:
+        refeicaoId:
+          type: integer
+        data:
+          type: string
+          format: date
+        quantidadeKg:
+          type: number
+          format: float
+          minimum: 0.01
+        ingredientes:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [nome, quantidadeKg]
+            properties:
+              nome:
+                type: string
+              quantidadeKg:
+                type: number
+                format: float
+                minimum: 0
+        motivo:
+          type: string
+          enum: [sobra_preparo, sobra_servida, estragado, outro]
+        observacoes:
+          type: string
+          maxLength: 500
+
+    DesperdicioFilters:
+      type: object
+      properties:
+        dataInicio:
+          type: string
+          format: date
+        dataFim:
+          type: string
+          format: date
+        refeicaoId:
+          type: integer
+        motivo:
+          type: string
+          enum: [sobra_preparo, sobra_servida, estragado, outro]
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+
+    DashboardDesperdicioResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                evolucao:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      data:
+                        type: string
+                        format: date
+                      totalKg:
+                        type: number
+                        format: float
+                distribuicao:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      motivo:
+                        type: string
+                      totalKg:
+                        type: number
+                        format: float
+                      porcentagem:
+                        type: number
+                        format: float
+                topIngredientes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      nome:
+                        type: string
+                      totalKg:
+                        type: number
+                        format: float
+                      ocorrencias:
+                        type: integer
+                estatisticas:
+                  type: object
+                  properties:
+                    totalPeriodoKg:
+                      type: number
+                      format: float
+                    mediaDiariaKg:
+                      type: number
+                      format: float
+                    totalRegistros:
+                      type: integer
+
+    # ==========================================
+    # Email Schemas
+    # ==========================================
+    SendEmailRequest:
+      type: object
+      required: [to, subject, html]
+      properties:
+        to:
+          type: string
+          format: email
+        subject:
+          type: string
+          maxLength: 200
+        html:
+          type: string
+        text:
+          type: string
+
+    VerificationCodeRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    VerifyCodeRequest:
+      type: object
+      required: [email, code]
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+
+    # ==========================================
+    # Consentimento Schemas (LGPD/ECA)
+    # ==========================================
+    Consentimento:
+      type: object
+      properties:
+        id:
+          type: integer
+        alunoId:
+          type: integer
+        alunoNome:
+          type: string
+        responsavelEmail:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [pendente, concedido, recusado, expirado]
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        respondedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ConsentimentoResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Consentimento'
+
+    ConsentimentoListResponse:
+      allOf:
+        - $ref: '#/components/schemas/Success'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                consentimentos:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Consentimento'
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+
+    CreateConsentimentoRequest:
+      type: object
+      required: [alunoId, responsavelEmail]
+      properties:
+        alunoId:
+          type: integer
+        responsavelEmail:
+          type: string
+          format: email
+
+    RespondConsentimentoRequest:
+      type: object
+      required: [token, status]
+      properties:
+        token:
+          type: string
+        status:
+          type: string
+          enum: [concedido, recusado]
+
+    # ==========================================
+    # Health Schemas
+    # ==========================================
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+          format: float
+        version:
+          type: string
+        services:
+          type: object
+          properties:
+            mysql:
+              type: object
+              properties:
+                status:
+                  type: string
+                latency:
+                  type: number
+            mongodb:
+              type: object
+              properties:
+                status:
+                  type: string
+                latency:
+                  type: number
+            authService:
+              type: object
+              properties:
+                status:
+                  type: string
+                latency:
+                  type: number
+            reservasService:
+              type: object
+              properties:
+                status:
+                  type: string
+                latency:
+                  type: number
+
+paths:
+  # ==========================================
+  # Health Checks
+  # ==========================================
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check do Gateway
+      description: Verifica saúde do Gateway e conectividade com serviços downstream
+      operationId: healthCheckGateway
+      responses:
+        '200':
+          description: Gateway saudável
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Gateway degradado/indisponível
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/live:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      description: Verifica se o processo está rodando (Kubernetes liveness)
+      operationId: livenessCheck
+      responses:
+        '200':
+          description: Processo vivo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "alive"
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe
+      description: Verifica se o serviço está pronto para receber tráfego (Kubernetes readiness)
+      operationId: readinessCheck
+      responses:
+        '200':
+          description: Pronto para tráfego
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ready"
+        '503':
+          description: Não pronto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "not ready"
+
+  # ==========================================
+  # Auth Routes (Gateway -> Auth Service)
+  # ==========================================
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login de usuário
+      description: |
+        Autentica usuário e define cookies HttpOnly (access_token, refresh_token) + CSRF token.
+
+        **Cookies definidos:**
+        - `access_token`: JWT (15min, HttpOnly, Secure, SameSite=Lax)
+        - `refresh_token`: JWT (7d, HttpOnly, Secure, SameSite=Lax)
+        - `csrf_token`: Token CSRF (Session, HttpOnly, SameSite=Lax)
+
+        **Header de resposta:** `X-CSRF-Token` para double-submit pattern
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          headers:
+            Set-Cookie:
+              description: Cookies de autenticação
+              schema:
+                type: string
+            X-CSRF-Token:
+              description: Token CSRF para próximas mutações
+              schema:
+                type: string
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Conta inativa ou consentimento pendente (menores de 18)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit excedido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registro de novo usuário
+      description: |
+        Cria novo usuário (aluno ou professor). Para alunos < 18 anos, exige email do responsável
+        e inicia fluxo de consentimento LGPD/ECA.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Dados inválidos ou email já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Consentimento necessário para menor de idade
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout do usuário
+      description: Invalida refresh token no servidor e limpa cookies de autenticação
+      operationId: logout
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      responses:
+        '200':
+          description: Logout realizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+          headers:
+            Set-Cookie:
+              description: Cookies limpos (expired)
+              schema:
+                type: string
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Renovar access token
+      description: Usa refresh token do cookie para gerar novo access token e CSRF token
+      operationId: refreshToken
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Token renovado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+          headers:
+            Set-Cookie:
+              description: Novo access_token cookie
+              schema:
+                type: string
+            X-CSRF-Token:
+              description: Novo token CSRF
+              schema:
+                type: string
+        '401':
+          description: Refresh token inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Obter usuário autenticado
+      description: Retorna dados do usuário logado a partir do access token
+      operationId: getMe
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/google:
+    get:
+      tags: [Auth]
+      summary: Iniciar OAuth Google
+      description: Retorna URL de autorização do Google para redirecionamento
+      operationId: googleAuthUrl
+      responses:
+        '200':
+          description: URL de autorização
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleAuthUrlResponse'
+
+  /auth/google/callback:
+    get:
+      tags: [Auth]
+      summary: Callback OAuth Google
+      description: Processa callback do Google, cria/loga usuário e define cookies
+      operationId: googleCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redireciona para frontend com cookies definidos
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+            Set-Cookie:
+              schema:
+                type: string
+        '400':
+          description: Erro no callback OAuth
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      summary: Alterar senha
+      description: Altera senha do usuário autenticado (exige senha atual)
+      operationId: changePassword
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Senha alterada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Senha atual incorreta ou nova senha inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/demo-login:
+    post:
+      tags: [Auth]
+      summary: Login demo (desenvolvimento)
+      description: |
+        Login rápido para desenvolvimento. Disponível apenas se `DEMO_MODE=true`.
+        Aceita role como parâmetro para simular diferentes perfis.
+      operationId: demoLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [aluno, professor, adm]
+                  example: "aluno"
+      responses:
+        '200':
+          description: Login demo realizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '403':
+          description: Demo mode desabilitado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Usuários Routes (Admin)
+  # ==========================================
+  /api/usuarios:
+    get:
+      tags: [Usuários]
+      summary: Listar usuários (Admin)
+      description: Lista paginada de usuários com filtros. Requer role `adm`.
+      operationId: listUsers
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [aluno, professor, adm]
+        - name: search
+          in: query
+          schema:
+            type: string
+            description: Busca por nome ou email
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de usuários
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado (requer role adm)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Usuários]
+      summary: Criar usuário (Admin)
+      description: Cria novo usuário com role definida. Requer role `adm`.
+      operationId: createUser
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/usuarios/{id}:
+    get:
+      tags: [Usuários]
+      summary: Obter usuário por ID (Admin)
+      operationId: getUserById
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags: [Usuários]
+      summary: Atualizar usuário (Admin)
+      operationId: updateUser
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Usuário atualizado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Usuários]
+      summary: Desativar usuário (Admin)
+      description: Soft delete - marca usuário como inativo. Requer role `adm`.
+      operationId: deleteUser
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuário desativado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/usuarios/{id}/reset-password:
+    post:
+      tags: [Usuários]
+      summary: Resetar senha de usuário (Admin)
+      description: Gera senha temporária e envia por email. Requer role `adm`.
+      operationId: resetUserPassword
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Senha resetada e email enviado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Cardápio Routes
+  # ==========================================
+  /api/cardapio/semanal:
+    get:
+      tags: [Cardápio]
+      summary: Cardápio da semana
+      description: Retorna cardápio completo da semana com alertas de alergia do usuário logado
+      operationId: getCardapioSemanal
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Cardápio semanal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardapioSemanalResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cardapio/refeicoes:
+    get:
+      tags: [Cardápio]
+      summary: Listar todas as refeições (Admin)
+      description: Lista paginada de todas as refeições cadastradas. Requer role `adm`.
+      operationId: listRefeicoes
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: diaSemana
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+        - name: tipo
+          in: query
+          schema:
+            type: string
+            enum: [almoco, jantar, lanche]
+      responses:
+        '200':
+          description: Lista de refeições
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          refeicoes:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Refeicao'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Cardápio]
+      summary: Criar refeição (Admin)
+      description: Cadastra nova refeição no cardápio. Requer role `adm`.
+      operationId: createRefeicao
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRefeicaoRequest'
+      responses:
+        '201':
+          description: Refeição criada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Refeicao'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cardapio/refeicoes/{id}:
+    get:
+      tags: [Cardápio]
+      summary: Obter refeição por ID
+      operationId: getRefeicaoById
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados da refeição
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Refeicao'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Refeição não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags: [Cardápio]
+      summary: Atualizar refeição (Admin)
+      operationId: updateRefeicao
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRefeicaoRequest'
+      responses:
+        '200':
+          description: Refeição atualizada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Refeicao'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Refeição não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Cardápio]
+      summary: Excluir refeição (Admin)
+      operationId: deleteRefeicao
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Refeição excluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Refeição não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cardapio/alergenos:
+    get:
+      tags: [Cardápio]
+      summary: Listar alérgenos
+      description: Lista todos os alérgenos cadastrados
+      operationId: listAlergenos
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de alérgenos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlergenosResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Cardápio]
+      summary: Criar alérgeno (Admin)
+      operationId: createAlergeno
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAlergenoRequest'
+      responses:
+        '201':
+          description: Alérgeno criado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Alergeno'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cardapio/alergenos/{id}:
+    delete:
+      tags: [Cardápio]
+      summary: Excluir alérgeno (Admin)
+      operationId: deleteAlergeno
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Alérgeno excluído
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Alérgeno não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Reservas Routes
+  # ==========================================
+  /api/reservas:
+    get:
+      tags: [Reservas]
+      summary: Listar reservas
+      description: |
+        Lista reservas com filtros e paginação.
+        - `aluno`: vê apenas suas reservas
+        - `professor`/`adm`: vê todas (com filtro usuarioId opcional)
+      operationId: listReservas
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [confirmada, cancelada, compareceu, nao_compareceu, todas]
+            default: "todas"
+        - name: dataInicio
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dataFim
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: refeicaoTipo
+          in: query
+          schema:
+            type: string
+            enum: [almoco, jantar, lanche]
+        - name: usuarioId
+          in: query
+          schema:
+            type: integer
+            description: Apenas para professor/adm
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Lista de reservas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservaListResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Reservas]
+      summary: Criar reserva
+      description: |
+        Cria nova reserva de refeição.
+        - `aluno`/`professor`: reserva para si mesmo
+        - `adm`: pode reservar para qualquer usuarioId
+      operationId: createReserva
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservaRequest'
+      responses:
+        '201':
+          description: Reserva criada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Reserva'
+        '400':
+          description: Dados inválidos, refeição inexistente ou reserva duplicada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflito (reserva já existe para esta data/refeição)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/reservas/dashboard:
+    get:
+      tags: [Reservas]
+      summary: Dashboard de reservas (Professor/Admin)
+      description: Retorna próximas reservas e estatísticas do mês
+      operationId: getReservasDashboard
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dashboard de reservas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardReservasResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado (requer professor ou adm)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/reservas/{id}:
+    get:
+      tags: [Reservas]
+      summary: Obter reserva por ID
+      operationId: getReservaById
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dados da reserva
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Reserva'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado (não é dono da reserva nem admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Reserva não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Reservas]
+      summary: Cancelar reserva
+      description: Cancela reserva (aluno/professor: própria; adm: qualquer)
+      operationId: cancelReserva
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelReservaRequest'
+      responses:
+        '200':
+          description: Reserva cancelada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Reserva'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Reserva não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/reservas/{id}/compareceu:
+    patch:
+      tags: [Reservas]
+      summary: Marcar comparecimento (Professor/Admin)
+      description: Marca reserva como "compareceu" ou "não compareceu". Requer role `professor` ou `adm`.
+      operationId: markComparecimento
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [compareceu]
+              properties:
+                compareceu:
+                  type: boolean
+      responses:
+        '200':
+          description: Comparecimento registrado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Reserva'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Reserva não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Desperdício Routes
+  # ==========================================
+  /api/desperdicio:
+    get:
+      tags: [Desperdício]
+      summary: Listar registros de desperdício
+      description: Lista paginada com filtros. Requer role `professor` ou `adm`.
+      operationId: listDesperdicio
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: dataInicio
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dataFim
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: refeicaoId
+          in: query
+          schema:
+            type: integer
+        - name: motivo
+          in: query
+          schema:
+            type: string
+            enum: [sobra_preparo, sobra_servida, estragado, outro]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Lista de desperdícios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesperdicioListResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Desperdício]
+      summary: Registrar desperdício
+      description: Cria novo registro de desperdício alimentar. Requer role `professor` ou `adm`.
+      operationId: createDesperdicio
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDesperdicioRequest'
+      responses:
+        '201':
+          description: Desperdício registrado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Desperdicio'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/desperdicio/dashboard:
+    get:
+      tags: [Desperdício]
+      summary: Dashboard de desperdício (Admin)
+      description: Retorna evolução temporal, distribuição por motivo, top ingredientes e estatísticas
+      operationId: getDesperdicioDashboard
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: dataInicio
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dataFim
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Dashboard de desperdício
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardDesperdicioResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado (requer adm)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/desperdicio/{id}:
+    get:
+      tags: [Desperdício]
+      summary: Obter desperdício por ID
+      operationId: getDesperdicioById
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dados do desperdício
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Desperdicio'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Desperdício]
+      summary: Excluir registro de desperdício (Admin)
+      operationId: deleteDesperdicio
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Registro excluído
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Email Routes
+  # ==========================================
+  /api/email/enviar:
+    post:
+      tags: [Email]
+      summary: Enviar email genérico (Admin)
+      description: Envia email personalizado. Requer role `adm`.
+      operationId: sendEmail
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+      responses:
+        '200':
+          description: Email enviado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/email/verificacao/enviar:
+    post:
+      tags: [Email]
+      summary: Enviar código de verificação
+      description: Envia código de 6 dígitos para verificação de email
+      operationId: sendVerificationCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationCodeRequest'
+      responses:
+        '200':
+          description: Código enviado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Email inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit excedido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/email/verificacao/validar:
+    post:
+      tags: [Email]
+      summary: Validar código de verificação
+      description: Valida código de 6 dígitos enviado por email
+      operationId: verifyCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyCodeRequest'
+      responses:
+        '200':
+          description: Código válido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Código inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Consentimento Routes (LGPD/ECA)
+  # ==========================================
+  /api/consentimento:
+    post:
+      tags: [Consentimento]
+      summary: Solicitar consentimento (Admin)
+      description: Inicia fluxo de consentimento para menor de 18 anos. Envia email ao responsável. Requer role `adm`.
+      operationId: createConsentimento
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConsentimentoRequest'
+      responses:
+        '201':
+          description: Solicitação enviada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentimentoResponse'
+        '400':
+          description: Dados inválidos ou consentimento já existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/consentimento:
+    get:
+      tags: [Consentimento]
+      summary: Listar consentimentos (Admin)
+      description: Lista paginada de consentimentos. Requer role `adm`.
+      operationId: listConsentimentos
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pendente, concedido, recusado, expirado]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Lista de consentimentos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentimentoListResponse'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/consentimento/{token}:
+    get:
+      tags: [Consentimento]
+      summary: Visualizar consentimento (Público - via token)
+      description: Página pública para responsável visualizar e responder consentimento
+      operationId: getConsentimentoByToken
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dados do consentimento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentimentoResponse'
+        '404':
+          description: Token inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/consentimento/responder:
+    post:
+      tags: [Consentimento]
+      summary: Responder consentimento (Público - via token)
+      description: Responsável concede ou recusa consentimento via token recebido por email
+      operationId: respondConsentimento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RespondConsentimentoRequest'
+      responses:
+        '200':
+          description: Resposta registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentimentoResponse'
+        '400':
+          description: Token inválido, expirado ou já respondido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # Internal Service Routes (HMAC)
+  # ==========================================
+  /internal/auth/validate:
+    post:
+      tags: [Auth]
+      summary: Validar token (Interno - HMAC)
+      description: Endpoint interno para serviços validarem JWT. Requer HMAC válido.
+      operationId: internalValidateToken
+      security:
+        - internalAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Token válido
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: HMAC inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /internal/auth/user/{id}:
+    get:
+      tags: [Usuários]
+      summary: Obter usuário por ID (Interno - HMAC)
+      description: Endpoint interno para serviços obterem dados de usuário. Requer HMAC válido.
+      operationId: internalGetUser
+      security:
+        - internalAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '403':
+          description: HMAC inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /internal/reservas/usuario/{usuarioId}:
+    get:
+      tags: [Reservas]
+      summary: Reservas de usuário (Interno - HMAC)
+      description: Endpoint interno para obter reservas de um usuário. Requer HMAC válido.
+      operationId: internalGetUserReservas
+      security:
+        - internalAuth: []
+      parameters:
+        - name: usuarioId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de reservas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Reserva'
+        '403':
+          description: HMAC inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
