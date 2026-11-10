@@ -1,276 +1,132 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-role="admin" data-active="Cardápio e Ingredientes">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoSchool - Gestão de Cardápio e Ingredientes</title>
-
-  <!-- Design System & FontAwesome -->
-  <link rel="stylesheet" href="../shared/design-system.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Módulo específico (opcional) -->
-  <link rel="stylesheet" href="cardapio.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AmaralHub — Cardápio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Externo -->
+    <link rel="stylesheet" href="cardapio.css">
 </head>
-<body class="page-wrapper">
+<body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased overflow-x-hidden">
 
-  <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
-  <aside id="sidebar"></aside>
-    <div>
-      <div class="sidebar-header">
-        <div class="logo-container">
-          <span>A</span>
-          <span class="logo-h">
-            H
-            <i class="fa-solid fa-graduation-cap logo-cap"></i>
-          </span>
-        </div>
-        <span class="brand-title">AmaralHub</span>
-      </div>
-
-      <nav class="sidebar-nav">
-        <a href="../Inicio/inicio.html" class="sidebar-item">
-          <i class="fa-solid fa-chart-pie"></i> Início
-        </a>
-        <a href="#" class="sidebar-item active">
-          <i class="fa-solid fa-utensils"></i> Cardápio e Ingredientes
-        </a>
-        <a href="../Reservas/reservas.html" class="sidebar-item">
-          <i class="fa-solid fa-calendar-check"></i> Reservas
-        </a>
-        <a href="../Professor/index.html" class="sidebar-item">
-          <i class="fa-solid fa-users"></i> Gestão de Usuários
-        </a>
-        <a href="../Relatórios/rela.html" class="sidebar-item">
-          <i class="fa-solid fa-file-lines"></i> Relatórios
-        </a>
-        <a href="../Configuracoes/config.html" class="sidebar-item">
-          <i class="fa-solid fa-gear"></i> Configurações
-        </a>
-      </nav>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex flex-col items-center justify-center text-white hidden">
+        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-3"></div>
+        <p class="text-sm font-medium">Carregando...</p>
     </div>
 
-    <div class="sidebar-footer">
-      <div class="user-box">
-        <div class="user-avatar">
-          <i class="fa-solid fa-user"></i>
+    <!-- Modal 403 Forbidden -->
+    <div id="modal403" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center border-t-4 border-red-600">
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Acesso Restrito</h3>
+            <p class="text-slate-600 text-xs mb-4">Apenas leitura para perfil Aluno.</p>
+            <button onclick="close403Modal()" class="w-full bg-slate-900 text-white font-semibold py-2 rounded-xl text-xs">Fechar</button>
         </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="w-full md:w-64 bg-[#0d47a1] text-white flex-shrink-0 flex flex-col justify-between min-h-screen">
         <div>
-          <span class="user-name">Administrador</span>
-          <span class="user-domain">@educacao.mg.gov.br</span>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ÁREA PRINCIPAL -->
-  <main class="main-content">
-
-    <header class="page-header">
-      <div>
-        <h1 class="page-title">Cardápio & Ingredientes</h1>
-        <p class="page-subtitle">Consulte e gerencie as refeições, valores nutricionais e alertas de alergênicos.</p>
-      </div>
-
-      <div>
-        <span class="badge-panel">Painel de Gestão</span>
-      </div>
-    </header>
-
-    <!-- BANNER DE ALERTA -->
-    <div class="alert-banner">
-      <i class="fa-solid fa-triangle-exclamation"></i>
-      <div>
-        <h3>Alerta Alimentar da Semana (Alergênicos Registrados)</h3>
-        <p>Atenção aos alunos com restrições: A refeição de <strong>Quarta-feira (Feijoada)</strong> contém Soja. O lanche contém Lactose.</p>
-      </div>
-    </div>
-
-    <!-- SEÇÃO DE IMPORTAÇÃO -->
-    <section class="upload-section">
-      <h2><i class="fa-solid fa-file-excel"></i> Homologação de Cardápio via Planilha Excel (.xlsx)</h2>
-      <p>Envie a planilha do mês. O processamento e validação dos campos nutricionais será executado via serviço Python.</p>
-
-      <div class="upload-controls">
-        <input type="file" id="excelFileInput" style="display: none;" accept=".xlsx" onchange="processarPlanilhaExcel(event)">
-
-        <button onclick="document.getElementById('excelFileInput').click()" class="btn-upload">
-          <i class="fa-solid fa-upload"></i>
-          <span>Selecionar Planilha (.xlsx)</span>
-        </button>
-
-        <span id="statusUpload" class="status-text">Nenhum arquivo selecionado</span>
-      </div>
-
-      <div id="loadingFila" class="loading-spinner hidden">
-        <i class="fa-solid fa-circle-notch fa-spin"></i>
-        <span>Validando dados no serviço Python (Fila planilha.cardapio.processada)...</span>
-      </div>
-    </section>
-
-    <!-- CARDS DO CARDÁPIO -->
-    <section>
-      <div class="section-header">
-        <h2 class="section-title">Cardápio da Semana</h2>
-        <span class="polling-text"><i class="fa-solid fa-arrows-rotate"></i> Atualização assíncrona ativa (Polling 5s)</span>
-      </div>
-
-      <div class="cardapio-grid">
-
-        <!-- SEGUNDA-FEIRA -->
-        <div class="meal-card today">
-          <div class="badge-today">Hoje</div>
-          <h3 class="day-title">Segunda-feira</h3>
-
-          <div class="meal-block">
-            <span class="meal-type-almoco">Almoço</span>
-            <h4 class="meal-name">Arroz, Feijão, Frango Grelhado e Salada</h4>
-            <div class="tags-container">
-              <span class="tag-green">Sem Glúten</span>
-              <span class="tag-green">Sem Lactose</span>
+            <!-- Header / Logo -->
+            <div class="pt-8 pb-4 text-center flex items-center justify-center gap-2">
+                <div class="relative flex items-center justify-center font-extrabold text-4xl tracking-tight">
+                    <span>AH</span>
+                    <i class="fa-solid fa-graduation-cap text-lg absolute -top-2 -right-3 rotate-12"></i>
+                </div>
             </div>
-          </div>
 
-          <div>
-            <span class="meal-type-lanche">Lanche</span>
-            <h4 class="meal-name">Mingau de Aveia com Frutas</h4>
-            <div class="tags-container">
-              <span class="tag-red"><i class="fa-solid fa-circle-exclamation"></i> Contém Lactose</span>
+            <!-- Profile Badge -->
+            <div class="px-6 py-2 flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" alt="Foto do Usuário" class="w-12 h-12 rounded-full object-cover border-2 border-white/80 shadow-md">
+                <div class="text-left">
+                    <span class="text-[10px] font-bold text-blue-200 uppercase block">ALUNO:</span>
+                    <h2 id="sidebarUserName" class="text-sm font-bold text-white leading-tight">Gabriel Silva</h2>
+                    <p id="sidebarUserSub" class="text-xs text-blue-200">8º Ano A</p>
+                </div>
             </div>
-          </div>
 
-          <div class="card-footer">
-            <button onclick="editarRefeicao('Segunda-feira')" class="btn-edit">
-              <i class="fa-regular fa-pen-to-square"></i>
-              <span>Editar Cardápio</span>
-            </button>
-          </div>
+            <!-- Navigation Links -->
+            <nav class="mt-6 px-3 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl sidebar-item-active">
+                    <i class="fa-solid fa-house w-4 text-center"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="switchTab('weekly')" id="nav-weekly" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-white hover:bg-white/10 rounded-xl">
+                    <i class="fa-solid fa-calendar-days w-4 text-center"></i>
+                    <span>Cardápio Semanal</span>
+                </button>
+                <button onclick="switchTab('nutrition')" id="nav-nutrition" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-white hover:bg-white/10 rounded-xl">
+                    <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
+                    <span>Nutrição</span>
+                </button>
+                <button onclick="switchTab('restrictions')" id="nav-restrictions" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-white hover:bg-white/10 rounded-xl">
+                    <i class="fa-solid fa-ban w-4 text-center"></i>
+                    <span>Restrições</span>
+                </button>
+                <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-white hover:bg-white/10 rounded-xl">
+                    <i class="fa-solid fa-rotate-left w-4 text-center"></i>
+                    <span>Histórico</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-white hover:bg-white/10 rounded-xl">
+                    <i class="fa-solid fa-gear w-4 text-center"></i>
+                    <span>Configurações</span>
+                </button>
+            </nav>
         </div>
 
-        <!-- TERÇA-FEIRA -->
-        <div class="meal-card">
-          <h3 class="day-title">Terça-feira</h3>
-
-          <div class="meal-block">
-            <span class="meal-type-almoco">Almoço</span>
-            <h4 class="meal-name">Macarronada à Bolonhesa e Salada Verde</h4>
-            <div class="tags-container">
-              <span class="tag-red"><i class="fa-solid fa-circle-exclamation"></i> Contém Glúten</span>
-            </div>
-          </div>
-
-          <div>
-            <span class="meal-type-lanche">Lanche</span>
-            <h4 class="meal-name">Suco Natural e Biscoito Integral</h4>
-            <div class="tags-container">
-              <span class="tag-green">Sem Lactose</span>
-            </div>
-          </div>
-
-          <div class="card-footer">
-            <button onclick="editarRefeicao('Terça-feira')" class="btn-edit">
-              <i class="fa-regular fa-pen-to-square"></i>
-              <span>Editar Cardápio</span>
-            </button>
-          </div>
+        <div class="p-3 text-center text-[10px] text-blue-200/60 border-t border-blue-900/30">
+            AmaralHub v2.1
         </div>
+    </aside>
 
-        <!-- QUARTA-FEIRA -->
-        <div class="meal-card">
-          <h3 class="day-title">Quarta-feira</h3>
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
 
-          <div class="meal-block">
-            <span class="meal-type-almoco">Almoço</span>
-            <h4 class="meal-name">Feijoada Tradicional, Arroz e Couve</h4>
-            <div class="tags-container">
-              <span class="tag-amber"><i class="fa-solid fa-triangle-exclamation"></i> Contém Soja</span>
+        <!-- Top Header Bar -->
+        <header class="bg-white border-b border-slate-200/80 px-8 py-3 flex items-center justify-end sticky top-0 z-10">
+            <!-- Top Right Profile -->
+            <div class="flex items-center gap-4">
+                <button class="relative text-slate-400 hover:text-slate-600" title="Notificações">
+                    <i class="fa-regular fa-bell text-base"></i>
+                    <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+
+                <div class="flex items-center gap-2 cursor-pointer">
+                    <div class="w-7 h-7 rounded-full bg-[#0d47a1] text-white font-bold flex items-center justify-center text-xs">
+                        G
+                    </div>
+                    <span id="topUserName" class="text-xs font-semibold text-slate-700">Gabriel Silva</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                </div>
             </div>
-          </div>
+        </header>
 
-          <div>
-            <span class="meal-type-lanche">Lanche</span>
-            <h4 class="meal-name">Salada de Frutas com Granola</h4>
-            <div class="tags-container">
-              <span class="tag-green">100% Vegano</span>
-            </div>
-          </div>
+        <!-- Main Content Canvas -->
+        <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
 
-          <div class="card-footer">
-            <button onclick="editarRefeicao('Quarta-feira')" class="btn-edit">
-              <i class="fa-regular fa-pen-to-square"></i>
-              <span>Editar Cardápio</span>
-            </button>
-          </div>
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="space-y-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Olá, Gabriel! Cardápio de Hoje</h1>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Quarta-feira, 24 de Outubro, 2024</p>
+                </div>
+
+                <!-- Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="dailyMenuContainer">
+                    <!-- Cards inseridos via JS -->
+                </div>
+            </section>
+
         </div>
+    </main>
 
-        <!-- QUINTA-FEIRA -->
-        <div class="meal-card">
-          <h3 class="day-title">Quinta-feira</h3>
-
-          <div class="meal-block">
-            <span class="meal-type-almoco">Almoço</span>
-            <h4 class="meal-name">Frango Assado, Purê de Batata e Legumes</h4>
-            <div class="tags-container">
-              <span class="tag-green">Sem Glúten</span>
-              <span class="tag-green">Sem Lactose</span>
-            </div>
-          </div>
-
-          <div>
-            <span class="meal-type-lanche">Lanche</span>
-            <h4 class="meal-name">Iogurte Natural com Mel e Castanhas</h4>
-            <div class="tags-container">
-              <span class="tag-red"><i class="fa-solid fa-circle-exclamation"></i> Contém Lactose</span>
-              <span class="tag-amber"><i class="fa-solid fa-triangle-exclamation"></i> Contém Castanhas</span>
-            </div>
-          </div>
-
-          <div class="card-footer">
-            <button onclick="editarRefeicao('Quinta-feira')" class="btn-edit">
-              <i class="fa-regular fa-pen-to-square"></i>
-              <span>Editar Cardápio</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- SEXTA-FEIRA -->
-        <div class="meal-card">
-          <h3 class="day-title">Sexta-feira</h3>
-
-          <div class="meal-block">
-            <span class="meal-type-almoco">Almoço</span>
-            <h4 class="meal-name">Peixe Grelhado, Arroz Integral e Salada</h4>
-            <div class="tags-container">
-              <span class="tag-green">Sem Glúten</span>
-              <span class="tag-green">Sem Lactose</span>
-              <span class="tag-green">Rico em Ômega-3</span>
-            </div>
-          </div>
-
-          <div>
-            <span class="meal-type-lanche">Lanche</span>
-            <h4 class="meal-name">Vitamina de Banana com Aveia</h4>
-            <div class="tags-container">
-              <span class="tag-amber"><i class="fa-solid fa-triangle-exclamation"></i> Contém Glúten</span>
-              <span class="tag-red"><i class="fa-solid fa-circle-exclamation"></i> Contém Lactose</span>
-            </div>
-          </div>
-
-          <div class="card-footer">
-            <button onclick="editarRefeicao('Sexta-feira')" class="btn-edit">
-              <i class="fa-regular fa-pen-to-square"></i>
-              <span>Editar Cardápio</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Shared sidebar builder -->
-  <script src="../shared/sidebar.js"></script>
-  <!-- Page specific script -->
-  <script src="cardapio.js"></script>
+    <!-- JavaScript Externo -->
+    <script src="cardapio.js"></script>
 </body>
 </html>

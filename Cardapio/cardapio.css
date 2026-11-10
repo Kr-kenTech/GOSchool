@@ -552,8 +552,10 @@ body {
 }
 
 .btn-edit:hover {
-  background-color: #dbeafe;
-  color: #0f3d80;
+  color: #1e40af;
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
 }
 
 .btn-edit:active {
@@ -595,53 +597,7 @@ body {
     border-radius: 0;
   }
 
-  .sidebar-header {
-    padding: 0;
-    border-bottom: none;
-  }
-
-  .logo-container {
-    font-size: 1.5rem;
-  }
-
-  .brand-title {
-    display: none;
-  }
-
-  .sidebar-nav {
-    flex-direction: row;
-    margin-top: 0;
-    gap: 2px;
-    padding: 0;
-  }
-
-  .sidebar-item {
-    padding: 8px 12px;
-    font-size: 0.8125rem;
-  }
-
-  .sidebar-item i {
-    margin-right: 6px;
-  }
-
-  .sidebar-item.active {
-    border-left: none;
-    border-bottom: 3px solid #ffffff;
-    border-radius: 0;
-  }
-
-  .sidebar-footer {
-    display: none;
-  }
-
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.sidebar-item-active i {
+    color: #1448b1 !important;
 }
+}}
