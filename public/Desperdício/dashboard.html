@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoSchool - Relatórios de Desperdício</title>
+
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Desperdício/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/theme.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+
+<div class="logo">
+<img src="/logo-simplificada.png" alt="Logo GoSchool">
+</div>
+
+<nav class="menu">
+<a href="/Desperdício/dashboard.html" class="menu-item active">Início</a>
+<a href="/Desperdício/visaoGeral.html" class="menu-item">Visão Geral</a>
+<a href="/Cardapio/cardapio.html" class="menu-item">Cardápio e Ingredientes</a>
+<a href="#" class="menu-item" data-auth-role="adm">Gestão de Usuários</a>
+<a href="#" class="menu-item" data-auth-role="adm">Relatórios</a>
+<a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
+</nav>
+
+<div class="sidebar-bottom">
+<div class="usuario">
+<div class="usuario-icon">👤</div>
+<span data-auth-user="name">Carregando...</span>
+</div>
+<button id="btn-logout" class="sair" type="button">
+<span class="sair-icon">➔</span>
+<span>Sair</span>
+</button>
+</div>
+
+</aside>
+
+<main>
+
+<header>
+
+<div>
+
+<h1>Relatórios de Desperdício</h1>
+
+<p>Acompanhe os indicadores de desperdício de alimentos.</p>
+
+</div>
+
+<div class="top-buttons">
+
+<button data-periodo="hoje">Hoje</button>
+
+<button data-periodo="semana" class="ativo">Semana</button>
+
+<button data-periodo="mes">Mês</button>
+
+<button data-periodo="ano">Ano</button>
+
+<button class="pdf" id="btn-export-pdf">
+<i class="fa-solid fa-file-pdf"></i>
+Exportar PDF
+</button>
+
+<button class="excel" id="btn-export-excel">
+<i class="fa-solid fa-file-excel"></i>
+Exportar Excel
+</button>
+
+</div>
+
+</header>
+
+<section class="cards">
+
+<div class="card">
+<div class="icone roxo">
+<i class="fa-solid fa-trash"></i>
+</div>
+<div>
+<h2 id="kpi-total-desperdicio">-- kg</h2>
+<p>Desperdício Total</p>
+</div>
+</div>
+
+<div class="card">
+<div class="icone azul">
+<i class="fa-solid fa-utensils"></i>
+</div>
+<div>
+<h2 id="kpi-refeicoes-servidas">--</h2>
+<p>Refeições Servidas</p>
+</div>
+</div>
+
+<div class="card">
+<div class="icone laranja">
+<i class="fa-solid fa-chart-column"></i>
+</div>
+<div>
+<h2 id="kpi-taxa-desperdicio">--%</h2>
+<p>Taxa de Desperdício</p>
+</div>
+</div>
+
+<div class="card">
+<div class="icone verde">
+<i class="fa-solid fa-dollar-sign"></i>
+</div>
+<div>
+<h2 id="kpi-economia">R$ --</h2>
+<p>Economia Estimada</p>
+</div>
+</div>
+
+</section>
+
+<section class="graficos">
+
+<div class="grafico grande">
+<h3>Evolução do desperdício <span class="demo-badge" id="badge-demo-evolucao" style="display:none;">(Demonstração)</span></h3>
+<canvas id="chart-evolucao" height="300"></canvas>
+</div>
+
+<div class="grafico">
+<h3>Distribuição por refeição <span class="demo-badge" id="badge-demo-distribuicao" style="display:none;">(Demonstração)</span></h3>
+<canvas id="chart-distribuicao" height="250"></canvas>
+</div>
+
+<div class="grafico">
+<h3>Alertas</h3>
+<ul id="lista-alertas">
+<li>Carregando...</li>
+</ul>
+</div>
+
+</section>
+
+<section class="tabelas">
+
+<div class="tabela">
+<h3>Ingredientes mais desperdiçados <span class="demo-badge" id="badge-demo-ingredientes" style="display:none;">(Demonstração)</span></h3>
+<table>
+<thead>
+<tr>
+<th>Ingrediente</th>
+<th>Kg</th>
+<th>%</th>
+</tr>
+</thead>
+<tbody id="tbody-ingredientes">
+<tr><td colspan="3">Carregando...</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="tabela">
+<h3>Resumo do período</h3>
+<table>
+<tbody id="tbody-resumo">
+<tr><td>Maior desperdício</td><td id="resumo-maior">--</td></tr>
+<tr><td>Menor desperdício</td><td id="resumo-menor">--</td></tr>
+<tr><td>Meta</td><td>5%</td></tr>
+</tbody>
+</table>
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+<script>
+// Estado do dashboard
+let chartEvolucao = null;
+let chartDistribuicao = null;
+let periodoAtual = 'semana';
+let isDemoData = false;
+
+// Inicialização da autenticação - apenas Admin
+document.addEventListener('DOMContentLoaded', async () => {
+    const authenticated = await Auth.init({
+        requireAuth: true,
+        allowedRoles: ['adm']
+    });
+
+    if (!authenticated) return;
+
+    // Configurar logout
+    const sairBtn = document.getElementById('btn-logout');
+    if (sairBtn) {
+        sairBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            Auth.logout();
+        });
+    }
+
+    // Configurar abas da sidebar
+    configurarAbasSidebar();
+
+    // Configurar botões de período
+    configurarBotoesPeriodo();
+
+    // Configurar exportação PDF
+    const btnExportPdf = document.getElementById('btn-export-pdf');
+    if (btnExportPdf) {
+        btnExportPdf.addEventListener('click', () => {
+            alert('Exportação para PDF será disponibilizada em breve.');
+        });
+    }
+
+    // Configurar exportação Excel (CSV)
+    const btnExportExcel = document.getElementById('btn-export-excel');
+    if (btnExportExcel) {
+        btnExportExcel.addEventListener('click', async () => {
+            try {
+                const res = await Auth.apiCall(`/api/desperdicio/dashboard?periodo=${periodoAtual}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const kpis = data.kpis || {};
+                    const csv = [
+                        ['Período', 'Desperdício (kg)', 'Refeições', 'Taxa (%)', 'Economia (R$)'],
+                        [periodoAtual, kpis.totalDesperdicio || 0, kpis.refeicoesServidas || 0, (kpis.taxaDesperdicio || 0).toFixed(1), kpis.economiaEstimada || 0]
+                    ].map(r => r.join(';')).join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `desperdicio-${periodoAtual}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }
+            } catch (e) {
+                alert('Erro ao exportar dados.');
+            }
+        });
+    }
+
+    // Carregar dados iniciais
+    await carregarDashboard();
+});
+
+function configurarAbasSidebar() {
+    document.querySelectorAll('.sidebar ul li[data-tab]').forEach(li => {
+        li.addEventListener('click', () => {
+            const tab = li.dataset.tab;
+            // Implementar navegação entre abas se necessário
+            console.log('Navegar para:', tab);
+        });
+    });
+}
+
+function configurarBotoesPeriodo() {
+    document.querySelectorAll('.top-buttons button[data-periodo]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.top-buttons button[data-periodo]').forEach(b => b.classList.remove('ativo'));
+            btn.classList.add('ativo');
+            periodoAtual = btn.dataset.periodo;
+            carregarDashboard();
+        });
+    });
+}
+
+async function carregarDashboard() {
+    try {
+        const res = await Auth.apiCall(`/api/desperdicio/dashboard?periodo=${periodoAtual}`);
+        if (!res.ok) throw new Error('Erro ao carregar dashboard');
+
+        const data = await res.json();
+        if (data.sucesso) {
+            isDemoData = data.demo === true;
+            atualizarKPIs(data.kpis);
+            atualizarGraficos(data.graficos);
+            atualizarAlertas(data.alertas);
+            atualizarTabelas(data.tabelas);
+            atualizarResumo(data.resumo);
+            atualizarBadgesDemo();
+        }
+    } catch (err) {
+        console.error('[Desperdício] Erro ao carregar dashboard:', err);
+        // Exibe estado de erro/vazio — não apresenta dados fictícios
+        atualizarKPIs({ totalDesperdicio: 0, refeicoesServidas: 0, taxaDesperdicio: 0, economiaEstimada: 0 });
+        atualizarGraficos({ evolucao: { labels: [], data: [] }, distribuicao: { labels: [], data: [] } });
+        atualizarAlertas([{ mensagem: 'Não foi possível carregar os dados do dashboard. Tente novamente mais tarde.', nivel: 'erro' }]);
+        atualizarTabelas({ ingredientes: [] });
+        atualizarResumo({ maiorDesperdicio: '--', menorDesperdicio: '--' });
+        atualizarBadgesDemo();
+    }
+}
+
+function atualizarKPIs(kpis) {
+    document.getElementById('kpi-total-desperdicio').textContent = `${kpis.totalDesperdicio || 0} kg`;
+    document.getElementById('kpi-refeicoes-servidas').textContent = `${kpis.refeicoesServidas || 0}`;
+    document.getElementById('kpi-taxa-desperdicio').textContent = `${(kpis.taxaDesperdicio || 0).toFixed(1)}%`;
+    document.getElementById('kpi-economia').textContent = `R$ ${kpis.economiaEstimada || 0}`;
+}
+
+function atualizarGraficos(graficos) {
+    // Gráfico de evolução (linha)
+    const ctxEvolucao = document.getElementById('chart-evolucao').getContext('2d');
+    if (chartEvolucao) chartEvolucao.destroy();
+
+    chartEvolucao = new Chart(ctxEvolucao, {
+        type: 'line',
+        data: {
+            labels: graficos.evolucao?.labels || [],
+            datasets: [{
+                label: 'Desperdício (kg)',
+                data: graficos.evolucao?.data || [],
+                borderColor: '#7c3aed',
+                backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Kg' } },
+                x: { title: { display: true, text: 'Data' } }
+            }
+        }
+    });
+
+    // Gráfico de distribuição (pizza/doughnut)
+    const ctxDistribuicao = document.getElementById('chart-distribuicao').getContext('2d');
+    if (chartDistribuicao) chartDistribuicao.destroy();
+
+    chartDistribuicao = new Chart(ctxDistribuicao, {
+        type: 'doughnut',
+        data: {
+            labels: graficos.distribuicao?.labels || [],
+            datasets: [{
+                data: graficos.distribuicao?.data || [],
+                backgroundColor: [
+                    '#7c3aed', // Roxo
+                    '#2563eb', // Azul
+                    '#f59e0b', // Laranja
+                    '#10b981', // Verde
+                    '#ef4444'  // Vermelho
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 11 } } }
+            }
+        }
+    });
+}
+
+function atualizarAlertas(alertas) {
+    const lista = document.getElementById('lista-alertas');
+    if (!alertas || alertas.length === 0) {
+        lista.innerHTML = '<li class="sem-alertas">Nenhum alerta no período</li>';
+        return;
+    }
+
+    lista.innerHTML = alertas.map(a => `
+        <li class="${a.nivel || ''}">${escapeHtml(a.mensagem)}</li>
+    `).join('');
+}
+
+function atualizarTabelas(tabelas) {
+    const tbody = document.getElementById('tbody-ingredientes');
+    if (!tabelas?.ingredientes || tabelas.ingredientes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3">Nenhum dado disponível</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = tabelas.ingredientes.map(item => `
+        <tr>
+            <td>${escapeHtml(item.nome)}</td>
+            <td>${item.kg} kg</td>
+            <td>${item.percentual}%</td>
+        </tr>
+    `).join('');
+}
+
+function atualizarResumo(resumo) {
+    document.getElementById('resumo-maior').textContent = resumo?.maiorDesperdicio || '--';
+    document.getElementById('resumo-menor').textContent = resumo?.menorDesperdicio || '--';
+}
+
+function atualizarBadgesDemo() {
+    const badges = document.querySelectorAll('.demo-badge');
+    badges.forEach(badge => {
+        badge.style.display = isDemoData ? 'inline' : 'none';
+    });
+}
+
+// Não há dados de demonstração. Quando a API não está disponível,
+// o dashboard exibe estado vazio (zeros) ou de erro, nunca dados fictícios.
+
+function escapeHtml(valor) {
+    if (valor === null || valor === undefined) return '';
+    return String(valor)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+</script>
+
+</body>
+</html>

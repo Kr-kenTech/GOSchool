@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoSchool - Configurações</title>
+
+    <!-- Preferências globais (deve ser o primeiro script) -->
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Configuracoes/config.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+
+<body>
+
+    <!-- SIDEBAR DINÂMICA UNIFICADA -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GoSchool">
+        </div>
+
+        <nav class="menu" id="menu-lateral">
+            <a href="#" id="link-inicio" class="menu-item">Início</a>
+            <a href="#" id="link-cardapio" class="menu-item">Cardápio e Ingredientes</a>
+            <a href="/Reservas/" id="link-reservas" class="menu-item" style="display: none;">Gerenciar Reservas</a>
+            <a href="#" id="link-usuarios" class="menu-item" style="display: none;">Gestão de Usuários</a>
+            <a href="#" id="link-relatorios" class="menu-item" style="display: none;">Relatório</a>
+            <a href="/configuracoes/" class="menu-item active">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon">👤</div>
+                <span id="nome-usuario" data-auth-user="name">Carregando...</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+        <div class="main-wrapper">
+
+            <!-- TOPO DA PÁGINA -->
+            <div class="top-bar">
+                <div class="top-actions">
+                    <button class="icon-btn notification-btn" title="Notificações">
+                        🔔
+                        <span class="badge">1</span>
+                    </button>
+                    <button class="icon-btn" title="Histórico">⏱️</button>
+                    <div class="user-profile-menu">
+                        <div class="avatar-sm">👤</div>
+                        <div class="profile-select-wrapper">
+                            <span class="profile-label">Perfil atual</span>
+                            <span id="current-role-display"
+                                style="font-weight: bold; font-size: 14px; text-transform: capitalize;">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CABEÇALHO -->
+            <header id="introducao">
+                <h1>Configurações</h1>
+                <p>Gerencie sua conta, preferências e mantenha-se informado.</p>
+            </header>
+
+            <!-- LISTA DE CONFIGURAÇÕES EM COLUNA/VERTICAL -->
+            <section class="config-vertical-list">
+
+                <!-- 1. MINHA CONTA -->
+                <div class="card-config">
+                    <div class="card-header">
+                        <div class="card-icon blue">👤</div>
+                        <div>
+                            <h2>Minha conta</h2>
+                            <p>Gerencie suas informações pessoais e de acesso.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="user-details">
+                            <div class="avatar-lg">👤</div>
+                            <div class="user-info">
+                                <div class="user-name-badge">
+                                    <strong id="user-profile-title">Usuário</strong>
+                                    <span class="badge-verified">Conta verificada ✓</span>
+                                </div>
+                                <span class="user-email" id="user-email-display">email@institucional.mg.gov.br</span>
+                                <span class="google-account">🌐 Conta institucional Google</span>
+                            </div>
+                        </div>
+
+                        <ul class="action-list">
+                            <li>
+                                <div class="action-item">
+                                    <span class="action-icon">🔒</span>
+                                    <span>Alterar senha</span>
+                                </div>
+                                <span class="arrow">></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 2. ALERGIAS -->
+                <div class="card-config" id="secao-alergias">
+                    <div class="card-header">
+                        <div class="card-icon purple">💜</div>
+                        <div>
+                            <h2>Alergias e Restrições</h2>
+                            <p>Informe alergias e restrições alimentares do seu perfil.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="section-block">
+                            <h3>Alergias Cadastradas</h3>
+                            <div class="tags-container" id="container-tags-alergias">
+                                <!-- Preenchido dinamicamente pelo JS -->
+                            </div>
+                            <button class="btn-add-allergy">+ Adicionar alergia</button>
+                        </div>
+
+                        <div class="section-block">
+                            <h3>Restrições Alimentares</h3>
+                            <div class="empty-box" id="box-restricoes">Nenhuma restrição cadastrada</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. NOTIFICAÇÕES -->
+                <div class="card-config highlighted-border">
+                    <div class="card-header">
+                        <div class="card-icon purple">🔔</div>
+                        <div>
+                            <h2>Notificações</h2>
+                            <p>Escolha como e quando deseja receber alertas.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="toggle-list">
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <span class="item-icon">🚨</span>
+                                    <div>
+                                        <strong>Alertas de alergias</strong>
+                                        <p>Receba avisos sobre ingredientes alergênicos presentes nos pratos</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <span class="item-icon">📋</span>
+                                    <div>
+                                        <strong>Alterações no cardápio</strong>
+                                        <p>Seja avisado sobre mudanças diárias no cardápio da cantina</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <span class="item-icon">📱</span>
+                                    <div>
+                                        <strong>Notificações Diretas</strong>
+                                        <p>Receber notificações diretas no seu navegador ou aplicativo</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="toggle-item">
+                                <div class="toggle-info">
+                                    <span class="item-icon">✉️</span>
+                                    <div>
+                                        <strong>Notificações por e-mail</strong>
+                                        <p>Receber resumos de novidades e alertas no seu e-mail cadastrado</p>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. PREFERÊNCIAS -->
+                <div class="card-config">
+                    <div class="card-header">
+                        <div class="card-icon green">🎨</div>
+                        <div>
+                            <h2>Preferências</h2>
+                            <p>Personalize o tema, idioma e acessibilidade do sistema.</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- TEMA -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="row-icon">☀️</span>
+                                <div>
+                                    <strong>Tema do sistema</strong>
+                                    <p>Alterne entre os modos claro e escuro</p>
+                                </div>
+                            </div>
+                            <div class="segmented-control theme-control">
+                                <button type="button" data-theme="claro">☀️ Claro</button>
+                                <button type="button" data-theme="escuro">🌙 Escuro</button>
+                                <button type="button" data-theme="sistema">🖥️ Sistema</button>
+                            </div>
+                        </div>
+
+                        <!-- TAMANHO DA FONTE -->
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <span class="row-icon">Aa</span>
+                                <div>
+                                    <strong>Tamanho da fonte</strong>
+                                    <p>Ajuste a escala dos textos no painel</p>
+                                </div>
+                            </div>
+                            <div class="segmented-control font-control">
+                                <button type="button" data-font="small">A-</button>
+                                <button type="button" data-font="default">Médio</button>
+                                <button type="button" data-font="large" class="large-text">A+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="config.js"></script>
+
+    <script>
+        // Inicialização da autenticação para Configurações
+        // Todos os perfis autenticados podem acessar
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['aluno', 'professor', 'adm']
+            });
+
+            if (!authenticated) return;
+
+            // Atualizar UI do usuário
+            const user = Auth.getCurrentUser();
+            if (user) {
+                atualizarUIUsuario(user);
+                atualizarMenuLateral(user.tipo);
+            }
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            // Configurar botão Notificações
+            const btnNotificacao = document.querySelector('.notification-btn');
+            if (btnNotificacao) {
+                btnNotificacao.addEventListener('click', () => {
+                    alert('Notificações: preferências de alerta atualizadas.');
+                });
+            }
+
+            // Configurar botão Histórico
+            const btnHistorico = document.querySelector('.top-actions .icon-btn:not(.notification-btn)');
+            if (btnHistorico) {
+                btnHistorico.addEventListener('click', () => {
+                    alert('Histórico de atividades será exibido em breve.');
+                });
+            }
+
+            // Configurar botão Adicionar Alergia
+            const btnAddAlergia = document.querySelector('.btn-add-allergy');
+            if (btnAddAlergia) {
+                btnAddAlergia.addEventListener('click', () => {
+                    const alergia = prompt('Digite o nome da alergia ou restrição alimentar:');
+                    if (alergia && alergia.trim()) {
+                        alert(`Alergia "${alergia.trim()}" registrada com sucesso.`);
+                    }
+                });
+            }
+
+            // Carregar alergias do usuário
+            await carregarAlergiasUsuario();
+        });
+
+        function atualizarUIUsuario(user) {
+            const roleLabels = {
+                'aluno': 'Aluno',
+                'professor': 'Professor',
+                'adm': 'Administrador'
+            };
+
+            const roleText = roleLabels[user.tipo] || user.tipo;
+            const nome = user.nome || 'Usuário';
+            const email = user.email || 'email@institucional.mg.gov.br';
+
+            // Sidebar
+            document.getElementById('nome-usuario').textContent = `${roleText}: ${nome}`;
+
+            // Top header
+            document.getElementById('current-role-display').textContent = roleText;
+
+            // Card "Minha conta"
+            document.getElementById('user-profile-title').textContent = nome;
+            document.getElementById('user-email-display').textContent = email;
+        }
+
+        function atualizarMenuLateral(tipo) {
+            const linkReservas = document.getElementById('link-reservas');
+            const linkUsuarios = document.getElementById('link-usuarios');
+            const linkRelatorios = document.getElementById('link-relatorios');
+
+            // Professor e Admin veem Reservas
+            if (['professor', 'adm'].includes(tipo)) {
+                linkReservas.style.display = 'block';
+            }
+
+            // Apenas Admin vê Usuários e Relatórios
+            if (tipo === 'adm') {
+                linkUsuarios.style.display = 'block';
+                linkRelatorios.style.display = 'block';
+            }
+        }
+
+        async function carregarAlergiasUsuario() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/alergias');
+                if (!res.ok) throw new Error('Erro ao carregar alergias');
+
+                const data = await res.json();
+                if (data.sucesso && data.alergias && data.alergias.length > 0) {
+                    const container = document.getElementById('container-tags-alergias');
+                    container.innerHTML = data.alergias.map(a =>
+                        `<span class="tag-allergy">${escapeHtml(a)}</span>`
+                    ).join('');
+                    document.getElementById('box-restricoes').textContent =
+                        data.alergias && data.alergias.length > 0
+                            ? `${data.alergias.length} alergia(s) cadastrada(s)`
+                            : 'Nenhuma restrição cadastrada';
+                }
+            } catch (err) {
+                console.warn('[Config] Não foi possível carregar alergias:', err);
+            }
+        }
+
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+
+</html>

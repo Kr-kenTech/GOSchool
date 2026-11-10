@@ -1,0 +1,582 @@
+/* =========================
+   CONFIGURAÇÕES GERAIS
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--gs-font-sans);
+}
+
+body {
+    background: var(--gs-background-secondary);
+    color: var(--gs-text-primary);
+}
+
+.pagina {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 100vh;
+    background: var(--gs-surface);
+    border-right: 1px solid var(--gs-border);
+    color: var(--gs-text-primary);
+    display: flex;
+    flex-direction: column;
+    z-index: var(--gs-z-fixed);
+    padding: 24px 0;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 20px;
+}
+
+.logo img {
+    width: 120px;
+    height: auto;
+    object-fit: contain;
+}
+
+.menu {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.menu-item {
+    color: var(--gs-text-secondary);
+    text-decoration: none;
+    font-size: 15px;
+    padding: 12px 24px;
+    transition: all var(--gs-transition-fast);
+    border-radius: var(--gs-radius);
+    margin: 0 12px;
+}
+
+.menu-item:hover {
+    background: var(--gs-surface-hover);
+    color: var(--gs-text-primary);
+}
+
+.menu-item.active {
+    font-weight: var(--gs-font-weight-semibold);
+    background: var(--gs-primary-subtle);
+    color: var(--gs-primary);
+    border-left: 4px solid var(--gs-primary);
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding: 0 24px;
+}
+
+.usuario {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.usuario-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--gs-radius-full);
+    background: var(--gs-primary-subtle);
+    color: var(--gs-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: var(--gs-font-weight-bold);
+}
+
+.usuario span {
+    font-size: 15px;
+    font-weight: var(--gs-font-weight-semibold);
+    color: var(--gs-text-primary);
+}
+
+.sair {
+    color: var(--gs-text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.85;
+    transition: opacity var(--gs-transition-fast), color var(--gs-transition-fast);
+}
+
+.sair:hover {
+    opacity: 1;
+    color: var(--gs-text-primary);
+}
+
+
+/* =========================
+   CONTEÚDO
+========================= */
+
+.conteudo {
+    margin-left: 277px;
+    width: calc(100% - 277px);
+    min-height: 100vh;
+    padding: 40px 50px;
+    background: var(--gs-background-secondary);
+}
+
+
+/* TÍTULO */
+
+h1 {
+    font-size: 31px;
+    font-weight: var(--gs-font-weight-bold);
+    margin-left: 2px;
+    color: var(--gs-text-primary);
+}
+
+
+/* =========================
+   SEÇÃO: RESERVAS AO VIVO
+========================= */
+
+.reservas-vivo {
+    background: var(--gs-surface);
+    padding: 25px;
+    border-radius: var(--gs-radius-md);
+    box-shadow: var(--gs-shadow-sm);
+    margin-top: 25px;
+    border: 1px solid var(--gs-border);
+}
+
+.topo-secao {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.topo-secao h2 {
+    font-size: 20px;
+    margin: 0;
+    color: var(--gs-text-primary);
+}
+
+.seletor-data-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.seletor-data-wrapper label {
+    font-size: 14px;
+    font-weight: var(--gs-font-weight-bold);
+    color: var(--gs-text-muted);
+}
+
+.seletor-data-wrapper input[type="date"] {
+    padding: 6px 12px;
+    border: 1px solid var(--gs-border);
+    border-radius: var(--gs-radius);
+    font-size: 15px;
+    outline: none;
+    background: var(--gs-surface);
+    color: var(--gs-text-primary);
+    transition: border-color var(--gs-transition-fast);
+}
+
+.seletor-data-wrapper input[type="date"]:focus {
+    border-color: var(--gs-border-focus);
+}
+
+/* ABAS MINIMALISTAS */
+
+.abas {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid var(--gs-border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.aba {
+    padding: 8px 20px;
+    cursor: pointer;
+    border-radius: var(--gs-radius);
+    font-size: 16px;
+    font-weight: var(--gs-font-weight-medium);
+    color: var(--gs-text-muted);
+    transition: all var(--gs-transition-fast);
+}
+
+.aba:hover {
+    background: var(--gs-background-secondary);
+    color: var(--gs-primary);
+}
+
+.aba.selecionada {
+    background: var(--gs-primary);
+    color: var(--gs-text-on-primary);
+}
+
+
+/* =========================
+   GRID DE TURNOS
+========================= */
+
+.grid-turnos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.calendario-coluna {
+    background: var(--gs-background-secondary);
+    padding: 15px;
+    border-radius: var(--gs-radius);
+    border: 1px solid var(--gs-border);
+}
+
+
+/* =========================
+   CALENDÁRIO LIMPO
+========================= */
+
+.cabecalho-calendario {
+    display: flex;
+    justify-content: space-between;
+    font-weight: var(--gs-font-weight-bold);
+    color: var(--gs-text-muted);
+    font-size: 13px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gs-border);
+    margin-bottom: 10px;
+}
+
+.linha-calendario {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gs-border);
+    min-height: 45px;
+}
+
+.horario {
+    font-size: 14px;
+    color: var(--gs-text-primary);
+    font-weight: var(--gs-font-weight-medium);
+}
+
+.horario-box {
+    width: 130px;
+    height: 40px;
+    background: var(--gs-background-secondary);
+    border-radius: var(--gs-radius);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--gs-text-primary);
+    font-size: 22px;
+    font-weight: var(--gs-font-weight-bold);
+    cursor: pointer;
+    transition: all var(--gs-transition-fast);
+    border: 1px solid var(--gs-border);
+}
+
+.horario-box:hover:not(.ocupado) {
+    background: var(--gs-surface);
+    border-color: var(--gs-border-strong);
+}
+
+.horario-box.ocupado {
+    background: var(--gs-danger-bg);
+    color: var(--gs-danger);
+    font-size: 13px;
+    text-align: center;
+    padding: 0 4px;
+    cursor: not-allowed;
+    border-color: var(--gs-danger);
+}
+
+.aviso-intervalo {
+    text-align: center;
+    font-size: 12px;
+    color: var(--gs-text-muted);
+    margin: 10px 0;
+    font-style: italic;
+}
+
+
+/* =========================
+   PAINEL (MINHAS RESERVAS)
+========================= */
+
+.painel {
+    background: var(--gs-surface);
+    padding: 25px;
+    border-radius: var(--gs-radius-md);
+    box-shadow: var(--gs-shadow-sm);
+    margin-top: 25px;
+    border: 1px solid var(--gs-border);
+}
+
+.painel h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--gs-text-primary);
+}
+
+.tabela {
+    background: var(--gs-surface);
+    border-radius: var(--gs-radius);
+    overflow: hidden;
+    border: 1px solid var(--gs-border);
+}
+
+.tabela-linha {
+    display: grid;
+    grid-template-columns: 140px 130px 100px 1fr 100px;
+    align-items: center;
+    padding: 12px 14px;
+    font-size: 15px;
+    border-bottom: 1px solid var(--gs-border);
+    color: var(--gs-text-primary);
+}
+
+.tabela-linha:last-child {
+    border-bottom: none;
+}
+
+.tabela-linha:nth-child(even) {
+    background: var(--gs-background-secondary);
+}
+
+.acoes {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.acoes button {
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    color: var(--gs-danger);
+    font-weight: var(--gs-font-weight-bold);
+    cursor: pointer;
+    transition: color var(--gs-transition-fast);
+}
+
+.acoes button:hover {
+    color: var(--gs-danger);
+    text-decoration: underline;
+}
+
+
+/* NOVA RESERVA */
+
+.nova-reserva {
+    margin-top: 20px;
+    background: var(--gs-primary);
+    color: var(--gs-text-on-primary);
+    border: none;
+    border-radius: var(--gs-radius);
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: var(--gs-font-weight-bold);
+    cursor: pointer;
+    transition: background var(--gs-transition-fast);
+}
+
+.nova-reserva:hover {
+    background: var(--gs-primary-hover);
+}
+
+
+/* =========================
+   PAINEL VAZIO
+========================= */
+
+.painel-vazio {
+    text-align: center;
+    color: var(--gs-text-muted);
+    padding: 25px;
+    font-size: 14px;
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgb(0 0 0 / 0.45);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: var(--gs-z-modal-backdrop);
+}
+
+.modal-box {
+    background: var(--gs-surface);
+    padding: 28px 30px;
+    border-radius: var(--gs-radius-md);
+    width: 100%;
+    max-width: 480px;
+    box-shadow: var(--gs-shadow-xl);
+    border: 1px solid var(--gs-border);
+}
+
+.modal-box h3 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: var(--gs-primary);
+}
+
+.modal-box label {
+    display: block;
+    margin: 12px 0 6px;
+    font-size: 14px;
+    font-weight: var(--gs-font-weight-semibold);
+    color: var(--gs-text-primary);
+}
+
+.modal-box select,
+.modal-box input[type="date"],
+.modal-box textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--gs-border);
+    border-radius: var(--gs-radius);
+    font-size: 15px;
+    outline: none;
+    background: var(--gs-surface);
+    color: var(--gs-text-primary);
+    transition: border-color var(--gs-transition-fast);
+}
+
+.modal-box select:focus,
+.modal-box input[type="date"]:focus,
+.modal-box textarea:focus {
+    border-color: var(--gs-border-focus);
+}
+
+.modal-box textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.modal-botoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.modal-botoes button {
+    padding: 9px 18px;
+    border-radius: var(--gs-radius);
+    font-size: 15px;
+    cursor: pointer;
+    border: none;
+    font-weight: var(--gs-font-weight-medium);
+    transition: all var(--gs-transition-fast);
+}
+
+#fechar-modal {
+    background: var(--gs-surface-hover);
+    color: var(--gs-text-secondary);
+}
+
+#fechar-modal:hover {
+    background: var(--gs-border);
+    color: var(--gs-text-primary);
+}
+
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+@media (max-width: 1100px) {
+    .grid-turnos {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 210px;
+    }
+
+    .conteudo {
+        margin-left: 210px;
+        width: calc(100% - 210px);
+        padding: 30px 20px;
+    }
+
+    .menu-item {
+        margin-left: 30px;
+    }
+
+    .tabela-linha {
+        grid-template-columns: 110px 110px 90px 1fr 90px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 700px) {
+    .sidebar {
+        width: 75px;
+    }
+
+    .menu-item {
+        font-size: 0;
+        margin-left: 10px;
+        width: 55px;
+        height: 50px;
+    }
+
+    .sidebar-bottom {
+        padding: 20px 10px;
+    }
+
+    .professor span,
+    .sair span:not(.icone-sair) {
+        display: none;
+    }
+
+    .professor, .sair {
+        justify-content: center;
+    }
+
+    .conteudo {
+        margin-left: 75px;
+        width: calc(100% - 75px);
+        padding: 20px 10px;
+    }
+}

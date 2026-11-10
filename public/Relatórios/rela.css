@@ -1,0 +1,376 @@
+/* =====================================================
+   RESET E CONFIGURAÇÕES GERAIS
+===================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--gs-font-sans);
+}
+
+body {
+    background-color: var(--gs-background-secondary);
+    color: var(--gs-text-primary);
+    display: flex;
+    min-height: 100vh;
+    transition: background-color var(--gs-transition-base), color var(--gs-transition-base);
+}
+
+img, svg, video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* =====================================================
+   MENU LATERAL (SIDEBAR)
+===================================================== */
+.sidebar {
+    width: 240px;
+    background-color: var(--gs-surface);
+    border-right: 1px solid var(--gs-border);
+    color: var(--gs-text-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem 0;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--gs-z-fixed);
+}
+
+.logo {
+    padding: 0 1.5rem 1.5rem;
+}
+
+.logo h2 {
+    font-size: 1.8rem;
+    font-weight: var(--gs-font-weight-bold);
+    color: var(--gs-text-primary);
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.menu-item {
+    padding: 0.85rem 1.5rem;
+    color: var(--gs-text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all var(--gs-transition-fast);
+    border-radius: var(--gs-radius) 0 0 var(--gs-radius);
+    margin-right: 10px;
+}
+
+.menu-item:hover, .menu-item.active {
+    background-color: var(--gs-primary-subtle);
+    color: var(--gs-primary);
+    border-left: 4px solid var(--gs-primary);
+}
+
+.sidebar-bottom {
+    padding: 1.5rem 1.5rem 0;
+    border-top: 1px solid var(--gs-border);
+}
+
+.usuario {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: var(--gs-font-weight-medium);
+    color: var(--gs-text-primary);
+}
+
+.logout {
+    color: var(--gs-text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color var(--gs-transition-fast);
+}
+
+.logout:hover {
+    color: var(--gs-text-primary);
+}
+
+/* =====================================================
+   ÁREA PRINCIPAL (MAIN)
+===================================================== */
+main {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.main-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Cabeçalho da Página */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.8rem;
+}
+
+.page-header h1 {
+    font-size: 1.5rem;
+    color: var(--gs-text-primary);
+}
+
+.page-header p {
+    color: var(--gs-text-muted);
+    font-size: 0.9rem;
+}
+
+.period-selector {
+    background: var(--gs-background-secondary);
+    padding: 0.25rem;
+    border-radius: var(--gs-radius);
+    display: flex;
+    gap: 0.2rem;
+}
+
+.btn-period {
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--gs-radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--gs-text-secondary);
+    transition: all var(--gs-transition-fast);
+}
+
+.btn-period:hover {
+    color: var(--gs-text-primary);
+}
+
+.btn-period.active {
+    background: var(--gs-primary);
+    color: var(--gs-text-on-primary);
+}
+
+/* =====================================================
+   CARDS DE ESTATÍSTICAS (KPIs)
+===================================================== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 1.8rem;
+}
+
+.card-box {
+    background: var(--gs-surface);
+    border-radius: var(--gs-radius-md);
+    padding: 1.2rem;
+    border: 1px solid var(--gs-border);
+    box-shadow: var(--gs-shadow-sm);
+    transition: all var(--gs-transition-base);
+}
+
+.card-box:hover {
+    box-shadow: var(--gs-shadow);
+    border-color: var(--gs-border-strong);
+}
+
+.card-box h3 {
+    font-size: 0.95rem;
+    color: var(--gs-text-primary);
+    margin-bottom: 0.8rem;
+}
+
+.kpi-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.kpi-icon {
+    font-size: 1.5rem;
+    background: var(--gs-surface-hover);
+    padding: 0.5rem;
+    border-radius: var(--gs-radius);
+}
+
+.kpi-data h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.1rem;
+    color: var(--gs-text-primary);
+}
+
+.kpi-data p {
+    font-size: 0.8rem;
+    color: var(--gs-text-muted);
+}
+
+.badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    margin-top: 0.4rem;
+    font-weight: var(--gs-font-weight-semibold);
+}
+
+.badge.positive { color: var(--gs-success); }
+.badge.negative { color: var(--gs-info); }
+
+/* =====================================================
+   GRID DE CONTEÚDO (GRÁFICOS E TABELAS)
+===================================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.2rem;
+    align-items: start;
+}
+
+.main-charts, .side-widgets {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.chart-placeholder {
+    height: 180px;
+    background: var(--gs-background-secondary);
+    border: 1px dashed var(--gs-border);
+    border-radius: var(--gs-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gs-text-muted);
+    font-size: 0.85rem;
+}
+
+/* Lista de Refeições */
+.meal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.meal-item {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--gs-border);
+}
+
+.meal-item small {
+    display: block;
+    color: var(--gs-text-muted);
+}
+
+.text-danger { color: var(--gs-danger); }
+
+/* Tabela de Ingredientes */
+.report-table-wrapper {
+    overflow-x: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.report-table th, .report-table td {
+    padding: 0.6rem 0.4rem;
+    border-bottom: 1px solid var(--gs-border);
+}
+
+.report-table th {
+    color: var(--gs-text-muted);
+    font-weight: var(--gs-font-weight-semibold);
+    background: var(--gs-background-secondary);
+}
+
+/* Alertas e Metas */
+.alert-box {
+    background: var(--gs-warning-bg);
+    border: 1px solid var(--gs-warning);
+    padding: 0.8rem;
+    border-radius: var(--gs-radius);
+    font-size: 0.8rem;
+    color: var(--gs-warning);
+    margin-bottom: 0.8rem;
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--gs-border);
+    border-radius: var(--gs-radius-full);
+    margin: 0.4rem 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--gs-info);
+    border-radius: var(--gs-radius-full);
+}
+
+.status-ok {
+    font-size: 0.75rem;
+    color: var(--gs-success);
+    font-weight: var(--gs-font-weight-semibold);
+}
+
+.summary-list {
+    list-style: none;
+    font-size: 0.85rem;
+}
+
+.summary-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--gs-border);
+}
+
+/* =====================================================
+   RESPONSIVIDADE (ADAPTAÇÃO DE TELA)
+===================================================== */
+@media (max-width: 1100px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+    main {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem;
+    }
+    .charts-row, .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

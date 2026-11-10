@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas - GoSchool</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Reservas/reservas.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+
+<body>
+
+    <div class="pagina">
+        <aside class="sidebar">
+
+            <div class="logo">
+                <img src="/logo-simplificada.png" alt="Logo GoSchool">
+            </div>
+
+            <nav class="menu">
+                <a href="#" id="nav-inicio" class="menu-item">Início</a>
+                <a href="/Cardapio/cardapio.html" class="menu-item">Cardápio</a>
+                <a href="#" class="menu-item">Ingredientes</a>
+                <a href="/Reservas/" class="menu-item active">Reservas</a>
+                <a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="usuario">
+                    <div class="usuario-icon">👤</div>
+                    <span data-auth-user="name">Olá, Professor!</span>
+                </div>
+                <button id="btn-logout" class="sair" type="button">
+                    <span class="sair-icon">➔</span>
+                    <span>Sair</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="conteudo">
+
+            <h1>Reservas</h1>
+            <div class="linha"></div>
+
+            <!-- ============================= -->
+            <!-- RESERVAS AO VIVO -->
+            <!-- ============================= -->
+            <section class="reservas-vivo">
+
+                <h2>Reservas ao vivo</h2>
+
+                <div class="seletor-data-wrapper">
+                    <label for="filtro-data-calendario">Selecione o Dia:</label>
+                    <input type="date" id="filtro-data-calendario">
+                </div>
+
+                <!-- CATEGORIAS -->
+                <div class="abas">
+                    <div class="aba selecionada">Informática</div>
+                    <div class="aba">Multimídia</div>
+                    <div class="aba">Retroprojetor</div>
+                </div>
+
+                <!-- GRADE -->
+                <div class="grid-turnos">
+
+                    <!-- MANHÃ -->
+                    <div class="calendario-coluna">
+                        <div class="titulo-periodo">Manhã</div>
+                        <div class="calendario">
+                            <div class="cabecalho-calendario">
+                                <div>Horário</div>
+                                <div>Disponibilidade</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">07:00 - 07:50</div>
+                                <div class="horario-box" data-horario="07:00 - 07:50">+</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">07:50 - 08:40</div>
+                                <div class="horario-box" data-horario="07:50 - 08:40">+</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">08:40 - 09:30</div>
+                                <div class="horario-box" data-horario="08:40 - 09:30">+</div>
+                            </div>
+
+                            <div class="aviso-intervalo">Intervalo: 09:30 - 09:45</div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">09:45 - 10:35</div>
+                                <div class="horario-box" data-horario="09:45 - 10:35">+</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">10:35 - 11:25</div>
+                                <div class="horario-box" data-horario="10:35 - 11:25">+</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TARDE -->
+                    <div class="calendario-coluna">
+                        <div class="titulo-periodo tarde">Tarde</div>
+                        <div class="calendario">
+                            <div class="cabecalho-calendario">
+                                <div>Horário</div>
+                                <div>Disponibilidade</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">13:00 - 13:50</div>
+                                <div class="horario-box" data-horario="13:00 - 13:50">+</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">13:50 - 14:40</div>
+                                <div class="horario-box" data-horario="13:50 - 14:40">+</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">14:40 - 15:30</div>
+                                <div class="horario-box" data-horario="14:40 - 15:30">+</div>
+                            </div>
+
+                            <div class="aviso-intervalo">Intervalo: 15:30 - 15:45</div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">15:45 - 16:35</div>
+                                <div class="horario-box" data-horario="15:45 - 16:35">+</div>
+                            </div>
+
+                            <div class="linha-calendario">
+                                <div class="horario">16:35 - 17:20</div>
+                                <div class="horario-box" data-horario="16:35 - 17:20">+</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ============================= -->
+            <!-- MINHAS RESERVAS -->
+            <!-- ============================= -->
+            <section class="painel">
+                <h2>Minhas Reservas</h2>
+
+                <div class="tabela">
+                    <div class="corpo-tabela-painel">
+                        <div class="painel-vazio">
+                            Nenhuma reserva cadastrada.
+                        </div>
+                    </div>
+                </div>
+
+                <button class="nova-reserva">+ Nova reserva</button>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // =====================================================
+        // VARIÁVEIS
+        // =====================================================
+        let categoriaAtual = 'Informática';
+        let reservasAtuais = [];
+        let requisicaoAtual = 0;
+
+        // =====================================================
+        // DATA
+        // =====================================================
+        const inputDataFiltro = document.getElementById('filtro-data-calendario');
+        const hojeIso = new Date().toISOString().split('T')[0];
+        inputDataFiltro.value = hojeIso;
+        inputDataFiltro.min = hojeIso;
+
+        // =====================================================
+        // MUDAR DATA
+        // =====================================================
+        inputDataFiltro.addEventListener('change', () => {
+            carregarReservas();
+        });
+
+        // =====================================================
+        // MUDAR CATEGORIA
+        // =====================================================
+        document.querySelectorAll('.reservas-vivo .aba').forEach(aba => {
+            aba.addEventListener('click', () => {
+                document.querySelectorAll('.reservas-vivo .aba').forEach(outraAba => {
+                    outraAba.classList.remove('selecionada');
+                });
+                aba.classList.add('selecionada');
+                categoriaAtual = aba.textContent.trim();
+                carregarReservas();
+            });
+        });
+
+        // =====================================================
+        // ESCAPAR HTML
+        // =====================================================
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // =====================================================
+        // ATUALIZAR GRADE (calendário ao vivo)
+        // =====================================================
+        function atualizarGradeLocal() {
+            const dataSelecionada = inputDataFiltro.value;
+
+            // Reseta todos os boxes
+            document.querySelectorAll('.horario-box').forEach(box => {
+                box.textContent = '+';
+                box.classList.remove('ocupado');
+                box.title = 'Clique para reservar';
+            });
+
+            // Filtra reservas do dia + categoria
+            const reservasDoDia = reservasAtuais.filter(r =>
+                String(r.categoria).trim().toLowerCase() === categoriaAtual.toLowerCase() &&
+                String(r.data) === String(dataSelecionada)
+            );
+
+            reservasDoDia.forEach(reserva => {
+                const box = document.querySelector(`.horario-box[data-horario="${reserva.horario}"]`);
+                if (box) {
+                    box.textContent = reserva.professor || 'Ocupado';
+                    box.classList.add('ocupado');
+                    box.title = `Reservado por: ${reserva.professor}${reserva.descricao ? ' - ' + reserva.descricao : ''}`;
+                }
+            });
+        }
+
+        // =====================================================
+        // CARREGAR RESERVAS DO SERVIDOR (com autenticação)
+        // =====================================================
+        async function carregarReservas() {
+            const numeroRequisicao = ++requisicaoAtual;
+
+            try {
+                const res = await Auth.apiCall(`/api/reservas?_t=${Date.now()}`);
+
+                const dataServidor = await res.json();
+
+                if (numeroRequisicao !== requisicaoAtual) return;
+
+                if (!dataServidor.sucesso) {
+                    console.error(dataServidor.erro);
+                    return;
+                }
+
+                reservasAtuais = Array.isArray(dataServidor.reservas)
+                    ? dataServidor.reservas
+                    : [];
+
+                atualizarGradeLocal();
+                atualizarTabela();
+
+            } catch (erro) {
+                console.error('Erro ao carregar reservas:', erro);
+            }
+        }
+
+        // =====================================================
+        // ATUALIZAR TABELA (Minhas Reservas)
+        // =====================================================
+        function atualizarTabela() {
+            const corpoTabela = document.querySelector('.corpo-tabela-painel');
+            if (!corpoTabela) return;
+
+            corpoTabela.innerHTML = '';
+
+            if (!reservasAtuais || reservasAtuais.length === 0) {
+                corpoTabela.innerHTML = `
+                    <div class="painel-vazio">
+                        Nenhuma reserva cadastrada.
+                    </div>
+                `;
+                return;
+            }
+
+            reservasAtuais.forEach(reserva => {
+                const linha = document.createElement('div');
+                linha.className = 'tabela-linha';
+                linha.dataset.reservaId = String(reserva.id);
+
+                linha.innerHTML = `
+                    <div><strong>${escapeHtml(reserva.categoria)}</strong></div>
+                    <div>${escapeHtml(reserva.data)}</div>
+                    <div>${escapeHtml(reserva.horario)}</div>
+                    <div style="color:#555; font-size:15px;">
+                        ${escapeHtml(reserva.professor)}
+                        ${reserva.descricao ? ' - ' + escapeHtml(reserva.descricao) : ''}
+                    </div>
+                    <div class="acoes">
+                        <button type="button" class="botao-excluir" data-id="${reserva.id}">
+                            Excluir
+                        </button>
+                    </div>
+                `;
+                corpoTabela.appendChild(linha);
+            });
+        }
+
+        // =====================================================
+        // CLIQUE NO BOTÃO EXCLUIR
+        // =====================================================
+        document.addEventListener('click', function (event) {
+            const botao = event.target.closest('.botao-excluir');
+            if (!botao) return;
+            excluirReserva(botao.dataset.id);
+        });
+
+        // =====================================================
+        // EXCLUIR RESERVA (com CSRF via Auth.apiCall)
+        // =====================================================
+        async function excluirReserva(id) {
+            if (!confirm('Tem certeza que deseja remover esta reserva?')) return;
+
+            id = String(id);
+
+            try {
+                const response = await Auth.apiCall(
+                    `/api/reservas/${encodeURIComponent(id)}?_t=${Date.now()}`,
+                    { method: 'DELETE' }
+                );
+
+                const resultado = await response.json();
+
+                if (!response.ok || !resultado.sucesso) {
+                    alert(resultado.erro || 'Erro ao excluir a reserva.');
+                    return;
+                }
+
+                // Remove localmente e atualiza na hora (sem F5)
+                reservasAtuais = reservasAtuais.filter(r => String(r.id) !== id);
+                atualizarTabela();
+                atualizarGradeLocal();
+
+            } catch (erro) {
+                console.error('Erro ao excluir:', erro);
+                alert('Erro de comunicação com o servidor.');
+            }
+        }
+
+        // =====================================================
+        // CRIAR MODAL
+        // =====================================================
+        function criarModalReserva() {
+            if (document.getElementById('modal-reserva')) return;
+
+            const modalHtml = `
+                <div id="modal-reserva" class="modal-overlay">
+                    <div class="modal-box" style="max-width:480px; max-height:90vh; overflow-y:auto;">
+                        <h3>Nova Reserva</h3>
+
+                        <form id="form-nova-reserva">
+                            <label>Recurso / Categoria:</label>
+                            <select id="reserva-categoria">
+                                <option value="Informática">Informática</option>
+                                <option value="Multimídia">Multimídia</option>
+                                <option value="Retroprojetor">Retroprojetor</option>
+                            </select>
+
+                            <label>Data da Reserva:</label>
+                            <input type="date" id="reserva-data" required>
+
+                            <label style="margin-bottom:8px;">Selecione os Horários:</label>
+
+                            <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:15px; background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #b4c7e7;">
+                                <span style="font-size:13px; font-weight:bold; color:#1852a5; margin-bottom:4px;">Manhã</span>
+                                <label><input type="checkbox" name="horarios" value="07:00 - 07:50"> 07:00 - 07:50</label>
+                                <label><input type="checkbox" name="horarios" value="07:50 - 08:40"> 07:50 - 08:40</label>
+                                <label><input type="checkbox" name="horarios" value="08:40 - 09:30"> 08:40 - 09:30</label>
+                                <label><input type="checkbox" name="horarios" value="09:45 - 10:35"> 09:45 - 10:35</label>
+                                <label><input type="checkbox" name="horarios" value="10:35 - 11:25"> 10:35 - 11:25</label>
+
+                                <span style="font-size:13px; font-weight:bold; color:#1852a5; margin:8px 0 4px 0;">Tarde</span>
+                                <label><input type="checkbox" name="horarios" value="13:00 - 13:50"> 13:00 - 13:50</label>
+                                <label><input type="checkbox" name="horarios" value="13:50 - 14:40"> 13:50 - 14:40</label>
+                                <label><input type="checkbox" name="horarios" value="14:40 - 15:30"> 14:40 - 15:30</label>
+                                <label><input type="checkbox" name="horarios" value="15:45 - 16:35"> 15:45 - 16:35</label>
+                                <label><input type="checkbox" name="horarios" value="16:35 - 17:20"> 16:35 - 17:20</label>
+                            </div>
+
+                            <label>Descrição (Opcional):</label>
+                            <textarea id="reserva-descricao" placeholder="Ex: Aula prática"></textarea>
+
+                            <div class="modal-botoes">
+                                <button type="button" id="fechar-modal">Cancelar</button>
+                                <button type="submit" class="nova-reserva" style="margin-top:0; padding:10px 18px; font-size:16px;">
+                                    Confirmar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            document.getElementById('fechar-modal').addEventListener('click', () => {
+                document.getElementById('modal-reserva').style.display = 'none';
+            });
+
+            document.getElementById('form-nova-reserva').addEventListener('submit', async event => {
+                event.preventDefault();
+
+                const categoria = document.getElementById('reserva-categoria').value;
+                const data = document.getElementById('reserva-data').value;
+                const descricao = document.getElementById('reserva-descricao').value;
+                const user = Auth.getCurrentUser();
+                const professor = user ? user.nome : 'Professor';
+
+                const horarios = Array.from(
+                    document.querySelectorAll('input[name="horarios"]:checked')
+                ).map(cb => cb.value);
+
+                if (horarios.length === 0) {
+                    alert('Selecione pelo menos um horário.');
+                    return;
+                }
+
+                try {
+                    const response = await Auth.apiCall('/api/reservas', {
+                        method: 'POST',
+                        body: JSON.stringify({ categoria, data, horarios, professor, descricao })
+                    });
+
+                    const resultado = await response.json();
+
+                    if (!response.ok || !resultado.sucesso) {
+                        alert(resultado.erro || 'Erro ao realizar reserva.');
+                        return;
+                    }
+
+                    // Fecha modal + limpa form
+                    document.getElementById('modal-reserva').style.display = 'none';
+                    document.getElementById('form-nova-reserva').reset();
+
+                    // Atualiza tudo na hora (sem F5)
+                    await carregarReservas();
+
+                } catch (erro) {
+                    console.error('Erro ao criar reserva:', erro);
+                    alert('Erro de comunicação com o servidor.');
+                }
+            });
+        }
+
+        // =====================================================
+        // ABRIR MODAL
+        // =====================================================
+        function abrirModal(categoria, data, horario) {
+            criarModalReserva();
+
+            if (categoria) {
+                document.getElementById('reserva-categoria').value = categoria;
+            }
+
+            const campoData = document.getElementById('reserva-data');
+            campoData.min = new Date().toISOString().split('T')[0];
+            campoData.value = data || campoData.min;
+
+            document.querySelectorAll('input[name="horarios"]').forEach(cb => {
+                cb.checked = cb.value === horario;
+            });
+
+            document.getElementById('modal-reserva').style.display = 'flex';
+        }
+
+        // =====================================================
+        // CLIQUE NOS BOXES DE HORÁRIO
+        // =====================================================
+        document.addEventListener('click', function (event) {
+            const box = event.target.closest('.horario-box');
+            if (!box) return;
+
+            if (box.textContent.trim() === '+') {
+                abrirModal(categoriaAtual, inputDataFiltro.value, box.dataset.horario);
+            }
+        });
+
+        // =====================================================
+        // INICIALIZAÇÃO COM AUTENTICAÇÃO
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inicializar auth - permite professor e admin
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['professor', 'adm']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            // Ajustar link Início conforme perfil
+            const navInicio = document.getElementById('nav-inicio');
+            const userRole = Auth.getUserRole();
+            if (navInicio) {
+                if (userRole === 'adm') navInicio.href = '/adm/';
+                else if (userRole === 'professor') navInicio.href = '/Professor/';
+                else navInicio.href = '/Aluno/';
+            }
+
+            criarModalReserva();
+            const botaoNovaReserva = document.querySelector('.painel .nova-reserva');
+            if (botaoNovaReserva) {
+                botaoNovaReserva.addEventListener('click', () => {
+                    abrirModal();
+                });
+            }
+            carregarReservas();
+            setInterval(() => carregarReservas(), 5000);
+        });
+    </script>
+</body>
+
+</html>

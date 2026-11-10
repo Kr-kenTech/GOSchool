@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GoSchool - Visão Geral</title>
+
+<link rel="stylesheet" href="/design-system.css">
+<link rel="stylesheet" href="/Desperdício/visaoGeral.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<script src="/theme.js"></script>
+<script src="/auth.js"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+
+<div class="logo">
+<img src="/logo-simplificada.png" alt="Logo GoSchool">
+</div>
+
+<nav class="menu">
+<a href="/Desperdício/visaoGeral.html" class="menu-item active">Visão Geral</a>
+<a href="/Desperdício/dashboard.html" class="menu-item">Início</a>
+<a href="/Cardapio/cardapio.html" class="menu-item">Cardápio</a>
+<a href="#" class="menu-item">Usuários</a>
+<a href="#" class="menu-item">Relatórios</a>
+<a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
+</nav>
+
+<div class="sidebar-bottom">
+<div class="usuario">
+<div class="usuario-icon">👤</div>
+<span data-auth-user="name">Administrador</span>
+</div>
+<button id="btn-logout" class="sair" type="button">
+<span class="sair-icon">➔</span>
+<span>Sair</span>
+</button>
+</div>
+
+</aside>
+
+<main>
+
+<header>
+
+<div>
+
+<h1>Visão Geral</h1>
+
+<p>
+Acompanhe os principais indicadores da plataforma.
+</p>
+
+</div>
+
+<button>
+<i class="fa-solid fa-calendar"></i>
+Últimos 30 dias
+</button>
+</header>
+
+<section class="cards">
+
+<div class="card">
+
+<div class="icon blue">
+<i class="fa-solid fa-users"></i>
+</div>
+
+<div>
+<h2>--</h2>
+<p>Usuários ativos</p>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="icon green">
+<i class="fa-solid fa-utensils"></i>
+</div>
+
+<div>
+<h2>--</h2>
+<p>Refeições registradas</p>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="icon orange">
+<i class="fa-solid fa-box"></i>
+</div>
+
+<div>
+<h2>-- kg</h2>
+<p>Alimentos utilizados</p>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="icon purple">
+<i class="fa-solid fa-leaf"></i>
+</div>
+
+<div>
+<h2>--%</h2>
+<p>Sustentabilidade</p>
+</div>
+
+</div>
+
+</section>
+
+<section class="painel">
+
+<div class="box">
+
+<h2>Atividades recentes</h2>
+
+<div class="atividade-placeholder">
+    <p>Sem atividades recentes.</p>
+</div>
+
+</div>
+
+<div class="box">
+
+<h2>Desempenho mensal</h2>
+
+<div class="grafico-placeholder">
+    <p>Sem dados de desempenho disponíveis.</p>
+</div>
+
+</div>
+
+</section>
+
+<section class="resumo">
+
+<div>
+
+<h2>--%</h2>
+<p>Disponibilidade do sistema</p>
+
+</div>
+
+<div>
+
+<h2>--</h2>
+<p>Ambientes cadastrados</p>
+
+</div>
+
+<div>
+
+<h2>--</h2>
+<p>Relatórios gerados</p>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+</body>
+<script>
+// Inicialização da autenticação - apenas Admin
+document.addEventListener('DOMContentLoaded', async () => {
+    const authenticated = await Auth.init({
+        requireAuth: true,
+        allowedRoles: ['adm']
+    });
+    if (!authenticated) return;
+
+    try {
+        const user = await Auth.getCurrentUser();
+        if (user) {
+            const nomeEl = document.querySelector('.perfil h3');
+            if (nomeEl) nomeEl.textContent = `Olá, ${user.nome}`;
+            const sairBtn = document.getElementById('btn-logout');
+            if (sairBtn) {
+                sairBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    Auth.logout();
+                });
+            }
+        }
+        await carregarDadosVisaoGeral();
+
+        // Botão Últimos 30 dias
+        const btnPeriodo30 = document.querySelector('header button');
+        if (btnPeriodo30) {
+            btnPeriodo30.addEventListener('click', async () => {
+                await carregarDadosVisaoGeral();
+                alert('Dados atualizados para os últimos 30 dias.');
+            });
+        }
+    } catch (err) {
+        console.error('[Visão Geral] Erro ao inicializar:', err);
+    }
+});
+
+async function carregarDadosVisaoGeral() {
+    try {
+        const res = await Auth.apiCall('/api/desperdicio/dashboard?periodo=mes');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.sucesso && data.kpis) {
+                // Card 1: Usuários ativos (não vem da API de desperdício, mantém --)
+                // Card 2: Refeições registradas
+                const refeicoesCard = document.querySelector('.card:nth-child(2) h2');
+                if (refeicoesCard) refeicoesCard.textContent = data.kpis.refeicoesServidas || 0;
+
+                // Card 3: Alimentos utilizados (kg)
+                const kgCard = document.querySelector('.card:nth-child(3) h2');
+                if (kgCard) kgCard.textContent = `${(data.kpis.totalDesperdicio || 0).toFixed(1)} kg`;
+
+                // Card 4: Sustentabilidade (taxa de desperdício %)
+                const sustentabilidadeCard = document.querySelector('.card:nth-child(4) h2');
+                if (sustentabilidadeCard) sustentabilidadeCard.textContent = `${(data.kpis.taxaDesperdicio || 0).toFixed(1)}%`;
+            }
+        }
+    } catch (err) {
+        console.error('[Visão Geral] Erro ao carregar dados:', err);
+    }
+}
+</script>
+</html>
