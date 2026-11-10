@@ -1,50 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-role="admin" data-active="Relatório">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios de Desperdício</title>
-    <script>
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark-theme');
-            window.addEventListener('DOMContentLoaded', () => {
-                document.body.classList.add('dark-theme');
-            });
-        }
-        const savedFontSize = localStorage.getItem('fontSize') || 'medium';
-        document.documentElement.classList.add(`font-${savedFontSize}`);
-    </script>
-    <script src="/global-preferences.js"></script>
+    <title>GoSchool - Relatórios de Desperdício</title>
+    <!-- Design System -->
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Página específica -->
     <link rel="stylesheet" href="rela.css">
 </head>
 
-<body>
+<body class="page-wrapper">
 
-    <!-- Menu Lateral (Sidebar) -->
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="/logo2.png" alt="Logo AH">
-        </div>
-        <nav class="menu">
-            <a href="#" class="menu-item">Início</a>
-            <a href="#" class="menu-item">Visão Geral</a>
-            <a href="#" class="menu-item">Cardápio e Ingredientes</a>
-            <a href="#" class="menu-item">Gestão de Usuários</a>
-            <a href="#" class="menu-item active">Relatório</a>
-            <a href="#" class="menu-item">Configurações</a>
-        </nav>
-        <div class="sidebar-bottom">
-            <div class="usuario">
-                <span class="user-icon">👤</span>
-                <span>Admin</span>
-            </div>
-            <a href="#" class="logout">➔ Sair</a>
-        </div>
-    </aside>
+    <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
+    <aside id="sidebar"></aside>
 
-    <!-- Conteúdo Principal -->
-    <main>
+    <main class="main-content">
         <div class="main-wrapper">
 
             <!-- Cabeçalho -->
@@ -249,6 +222,9 @@
 
         </div>
     </main>
+
+    <!-- Shared sidebar builder -->
+    <script src="../shared/sidebar.js"></script>
 </body>
 
 </html>

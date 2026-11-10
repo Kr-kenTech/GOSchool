@@ -1,42 +1,22 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-role="aluno" data-active="Início">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AmaralHub - Dashboard do Aluno</title>
-    <script src="/global-preferences.js"></script>
-    
-    <link rel="stylesheet" href="/dark-mode.css">
+    <title>GoSchool - Dashboard do Aluno</title>
+    <!-- Design System -->
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Página específica -->
     <link rel="stylesheet" href="aluno.css">
 </head>
 
-<body>
-    <!-- SIDEBAR DO ALUNO -->
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="/logo2.png" alt="Logo AH">
-        </div>
+<body class="page-wrapper">
 
-        <nav class="menu">
-            <a href="/Aluno/" class="menu-item active">Início</a>
-            <a href="#" class="menu-item">Cardápio e Ingredientes</a>
-            <a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
-        </nav>
+    <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
+    <aside id="sidebar"></aside>
 
-        <div class="sidebar-bottom">
-            <div class="usuario">
-                <div class="usuario-icon">👤</div>
-                <span>Aluno</span>
-            </div>
-            <a href="/login" class="sair">
-                <span class="sair-icon">➔</span>
-                <span>Sair</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- CONTEÚDO PRINCIPAL DO ALUNO -->
-    <main class="conteudo-principal">
+    <main class="main-content">
         <div class="main-wrapper">
             <header id="introducao">
                 <div>
@@ -83,6 +63,9 @@
             </section>
         </div>
     </main>
+
+    <!-- Shared sidebar builder -->
+    <script src="../shared/sidebar.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             if (!localStorage.getItem('userEmail')) {

@@ -1,41 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-role="admin" data-active="Início">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AmaralHub - Painel Administrativo</title>
-    <link rel="stylesheet" href="/Aluno/adm.css">
+    <title>GoSchool - Painel Administrativo</title>
+    <!-- Design System -->
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Página específica -->
+    <link rel="stylesheet" href="adm.css">
 </head>
 
-<body>
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="/logo2.png" alt="Logo AH">
-        </div>
+<body class="page-wrapper">
 
-        <nav class="menu">
-            <a href="/adm/" class="menu-item active">Início / Gestão</a>
-            <A href="/Gestão-Cardapio/" class="menu-item">Cardápio e Ingredientes</A>
-            <a href="/reservas" class="menu-item">Painel de Reservas</a>
-            <a href="#" class="menu-item">Usuários</a>
-            <a href="/adm/configuracoes/" class="menu-item">Configurações do Sistema</a>
-        </nav>
+    <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
+    <aside id="sidebar"></aside>
 
-        <div class="sidebar-bottom">
-            <div class="usuario">
-                <div class="usuario-icon">🛠️</div>
-                <span>Administradores</span>
-            </div>
-            <a href="/login" class="sair">
-                <span class="sair-icon">➔</span>
-                <span>Sair</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- CONTEÚDO PRINCIPAL DO ADMINISTRADOR -->
-    <main class="conteudo-principal">
+    <main class="main-content">
         <div class="main-wrapper">
             <header id="introducao">
                 <div>
@@ -68,6 +50,9 @@
             </section>
         </div>
     </main>
+
+    <!-- Shared sidebar builder -->
+    <script src="../shared/sidebar.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             if (!localStorage.getItem('userEmail')) {

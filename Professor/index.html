@@ -1,54 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-role="professor" data-active="Início">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AmaralHub - Dashboard do Professor</title>
-    <script>
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark-theme');
-            window.addEventListener('DOMContentLoaded', () => {
-                document.body.classList.add('dark-theme');
-            });
-        }
-        const savedFontSize = localStorage.getItem('fontSize') || 'medium';
-        document.documentElement.classList.add(`font-${savedFontSize}`);
-    </script>
-    <script src="/global-preferences.js"></script>
+    <title>GoSchool - Dashboard do Professor</title>
+    <!-- Design System -->
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Página específica -->
     <link rel="stylesheet" href="professor.css">
 </head>
 
-<body>
+<body class="page-wrapper">
 
-    <!-- SIDEBAR DO ALUNO -->
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="/logo2.png" alt="Logo AH">
-        </div>
+    <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
+    <aside id="sidebar"></aside>
 
-        <nav class="menu">
-            <a href="/Professor/" class="menu-item active">Início</a>
-            <a href="#" class="menu-item">Cardápio</a>
-            <a href="#" class="menu-item">Ingredientes</a>
-            <a href="/Reservas/" class="menu-item">Reservas</a>
-            <a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <div class="usuario">
-                <div class="usuario-icon">👤</div>
-                <span>Aluno</span>
-            </div>
-            <a href="/login" class="sair">
-                <span class="sair-icon">➔</span>
-                <span>Sair</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- ÁREA PRINCIPAL -->
-    <main>
+    <main class="main-content">
         <div class="main-wrapper">
 
             <!-- CABEÇALHO -->
@@ -147,6 +116,8 @@
         </div>
     </main>
 
+    <!-- Shared sidebar builder -->
+    <script src="../shared/sidebar.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             if (!localStorage.getItem('userEmail')) {

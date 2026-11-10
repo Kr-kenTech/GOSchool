@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<<<<<<< HEAD
+<html lang="pt-BR" data-role="admin" data-active="Cardápio e Ingredientes">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AmaralHub - Gestão de Cardápio e Ingredientes</title>
-  
-  <!-- Ligação com o ficheiro CSS local -->
-  <link rel="stylesheet" href="/Cardapio/cardapio.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+  <title>GoSchool - Gestão de Cardápio e Ingredientes</title>
 
-  <!-- BARRA LATERAL (SIDEBAR) -->
-  <aside class="sidebar">
+  <!-- Design System & FontAwesome -->
+  <link rel="stylesheet" href="../shared/design-system.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Módulo específico (opcional) -->
+  <link rel="stylesheet" href="cardapio.css">
+</head>
+<body class="page-wrapper">
+
+  <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
+  <aside id="sidebar"></aside>
     <div>
       <div class="sidebar-header">
         <div class="logo-container">
@@ -27,20 +28,23 @@
       </div>
 
       <nav class="sidebar-nav">
-        <a href="index.html" class="sidebar-item">
+        <a href="../Inicio/inicio.html" class="sidebar-item">
           <i class="fa-solid fa-chart-pie"></i> Início
         </a>
         <a href="#" class="sidebar-item active">
           <i class="fa-solid fa-utensils"></i> Cardápio e Ingredientes
         </a>
-        <a href="#" class="sidebar-item">
+        <a href="../Reservas/reservas.html" class="sidebar-item">
           <i class="fa-solid fa-calendar-check"></i> Reservas
         </a>
-        <a href="#" class="sidebar-item">
+        <a href="../Professor/index.html" class="sidebar-item">
           <i class="fa-solid fa-users"></i> Gestão de Usuários
         </a>
-        <a href="#" class="sidebar-item">
+        <a href="../Relatórios/rela.html" class="sidebar-item">
           <i class="fa-solid fa-file-lines"></i> Relatórios
+        </a>
+        <a href="../Configuracoes/config.html" class="sidebar-item">
+          <i class="fa-solid fa-gear"></i> Configurações
         </a>
       </nav>
     </div>
@@ -60,11 +64,11 @@
 
   <!-- ÁREA PRINCIPAL -->
   <main class="main-content">
-    
+
     <header class="page-header">
       <div>
         <h1 class="page-title">Cardápio & Ingredientes</h1>
-        <p class="page-subtitle">Consulte e gira as refeições, valores nutricionais e alertas de alergênicos.</p>
+        <p class="page-subtitle">Consulte e gerencie as refeições, valores nutricionais e alertas de alergênicos.</p>
       </div>
 
       <div>
@@ -88,7 +92,7 @@
 
       <div class="upload-controls">
         <input type="file" id="excelFileInput" style="display: none;" accept=".xlsx" onchange="processarPlanilhaExcel(event)">
-        
+
         <button onclick="document.getElementById('excelFileInput').click()" class="btn-upload">
           <i class="fa-solid fa-upload"></i>
           <span>Selecionar Planilha (.xlsx)</span>
@@ -111,7 +115,7 @@
       </div>
 
       <div class="cardapio-grid">
-        
+
         <!-- SEGUNDA-FEIRA -->
         <div class="meal-card today">
           <div class="badge-today">Hoje</div>
@@ -198,194 +202,75 @@
           </div>
         </div>
 
+        <!-- QUINTA-FEIRA -->
+        <div class="meal-card">
+          <h3 class="day-title">Quinta-feira</h3>
+
+          <div class="meal-block">
+            <span class="meal-type-almoco">Almoço</span>
+            <h4 class="meal-name">Frango Assado, Purê de Batata e Legumes</h4>
+            <div class="tags-container">
+              <span class="tag-green">Sem Glúten</span>
+              <span class="tag-green">Sem Lactose</span>
+            </div>
+          </div>
+
+          <div>
+            <span class="meal-type-lanche">Lanche</span>
+            <h4 class="meal-name">Iogurte Natural com Mel e Castanhas</h4>
+            <div class="tags-container">
+              <span class="tag-red"><i class="fa-solid fa-circle-exclamation"></i> Contém Lactose</span>
+              <span class="tag-amber"><i class="fa-solid fa-triangle-exclamation"></i> Contém Castanhas</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button onclick="editarRefeicao('Quinta-feira')" class="btn-edit">
+              <i class="fa-regular fa-pen-to-square"></i>
+              <span>Editar Cardápio</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SEXTA-FEIRA -->
+        <div class="meal-card">
+          <h3 class="day-title">Sexta-feira</h3>
+
+          <div class="meal-block">
+            <span class="meal-type-almoco">Almoço</span>
+            <h4 class="meal-name">Peixe Grelhado, Arroz Integral e Salada</h4>
+            <div class="tags-container">
+              <span class="tag-green">Sem Glúten</span>
+              <span class="tag-green">Sem Lactose</span>
+              <span class="tag-green">Rico em Ômega-3</span>
+            </div>
+          </div>
+
+          <div>
+            <span class="meal-type-lanche">Lanche</span>
+            <h4 class="meal-name">Vitamina de Banana com Aveia</h4>
+            <div class="tags-container">
+              <span class="tag-amber"><i class="fa-solid fa-triangle-exclamation"></i> Contém Glúten</span>
+              <span class="tag-red"><i class="fa-solid fa-circle-exclamation"></i> Contém Lactose</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button onclick="editarRefeicao('Sexta-feira')" class="btn-edit">
+              <i class="fa-regular fa-pen-to-square"></i>
+              <span>Editar Cardápio</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
   </main>
 
-  <script>
-    function processarPlanilhaExcel(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      if (!file.name.endsWith('.xlsx')) {
-        alert('Erro: Apenas planilhas no formato .xlsx são aceitas pelo parser Python.');
-        return;
-      }
-
-      const statusUpload = document.getElementById('statusUpload');
-      const loadingFila = document.getElementById('loadingFila');
-
-      statusUpload.textContent = `Ficheiro: "${file.name}"`;
-      loadingFila.classList.remove('hidden');
-
-      setTimeout(() => {
-        loadingFila.classList.add('hidden');
-        alert(`Sucesso: Planilha "${file.name}" processada via Python e persistida no MongoDB!`);
-      }, 2000);
-    }
-
-    function editarRefeicao(dia) {
-      alert(`A abrir edição do cardápio de: ${dia}`);
-    }
-  </script>
+  <!-- Shared sidebar builder -->
+  <script src="../shared/sidebar.js"></script>
+  <!-- Page specific script -->
+  <script src="cardapio.js"></script>
 </body>
-=======
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AmaralHub — Cardápio</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts (Inter) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <!-- CSS Externo -->
-    <link rel="stylesheet" href="cardapio.css">
-</head>
-
-<body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased overflow-x-hidden">
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay"
-        class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex flex-col items-center justify-center text-white hidden">
-        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-3"></div>
-        <p class="text-sm font-medium">Carregando...</p>
-    </div>
-
-    <!-- Modal 403 Forbidden -->
-    <div id="modal403"
-        class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center border-t-4 border-red-600">
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Acesso Restrito</h3>
-            <p class="text-slate-600 text-xs mb-4">Apenas leitura para perfil Aluno.</p>
-            <button onclick="close403Modal()"
-                class="w-full bg-slate-900 text-white font-semibold py-2 rounded-xl text-xs">Fechar</button>
-        </div>
-    </div>
-
-    <!-- SIDEBAR -->
-    <aside class="w-full md:w-64 bg-[#1448b1] text-white flex-shrink-0 flex flex-col justify-between min-h-screen">
-        <div>
-            <!-- Header / Logo -->
-            <div class="pt-6 pb-2 text-center">
-                <div class="font-extrabold text-3xl tracking-tighter">AH</div>
-                <div class="font-bold text-base mt-0.5">AmaralHub</div>
-            </div>
-
-            <!-- Profile Badge -->
-            <div class="px-6 py-3 flex flex-col items-center text-center">
-                <div
-                    class="w-14 h-14 rounded-full bg-blue-900/60 border-2 border-white/80 shadow-md flex items-center justify-center text-white text-lg">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-                <span class="mt-2 text-[10px] font-bold text-blue-200 uppercase">Aluno</span>
-                <h2 id="sidebarUserName" class="text-sm font-bold text-white">Gabriel Silva</h2>
-                <p id="sidebarUserSub" class="text-xs text-blue-200">8º Ano A</p>
-            </div>
-
-            <!-- Navigation Links -->
-            <nav class="mt-2 px-3 space-y-1">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl sidebar-item-active">
-                    <i class="fa-solid fa-house w-4 text-center"></i>
-                    <span>Dashboard</span>
-                </button>
-                <button onclick="switchTab('weekly')" id="nav-weekly"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl text-white hover:bg-white/10">
-                    <i class="fa-solid fa-calendar-days w-4 text-center"></i>
-                    <span>Cardápio Semanal</span>
-                </button>
-                <button onclick="switchTab('nutrition')" id="nav-nutrition"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl text-white hover:bg-white/10">
-                    <i class="fa-solid fa-clipboard-list w-4 text-center"></i>
-                    <span>Nutrição</span>
-                </button>
-                <button onclick="switchTab('restrictions')" id="nav-restrictions"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl text-white hover:bg-white/10">
-                    <i class="fa-solid fa-ban w-4 text-center"></i>
-                    <span>Restrições</span>
-                </button>
-                <button onclick="switchTab('history')" id="nav-history"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl text-white hover:bg-white/10">
-                    <i class="fa-solid fa-rotate-left w-4 text-center"></i>
-                    <span>Histórico</span>
-                </button>
-                <button onclick="switchTab('settings')" id="nav-settings"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-xs rounded-xl text-white hover:bg-white/10">
-                    <i class="fa-solid fa-gear w-4 text-center"></i>
-                    <span>Configurações</span>
-                </button>
-            </nav>
-        </div>
-
-        <div class="p-3 text-center text-[10px] text-blue-200/60 border-t border-blue-900/30">
-            AmaralHub v2.1
-        </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
-
-        <!-- Top Header Bar -->
-        <header
-            class="bg-white border-b border-slate-200/80 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
-            <!-- Role Switcher -->
-            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                <span class="text-xs text-slate-500 pl-2 hidden sm:inline">Perfil:</span>
-                <button id="btnRoleStudent" onclick="setUserRole('ALUNO')"
-                    class="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#1448b1] text-white">
-                    Aluno
-                </button>
-                <button id="btnRoleAdmin" onclick="setUserRole('ADMIN')"
-                    class="px-2.5 py-1 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200">
-                    Gestão
-                </button>
-            </div>
-
-            <!-- Top Right Profile -->
-            <div class="flex items-center gap-4 ml-auto">
-                <button class="relative text-slate-400 hover:text-slate-600" title="Notificações">
-                    <i class="fa-regular fa-bell text-base"></i>
-                    <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-
-                <div class="flex items-center gap-2 cursor-pointer">
-                    <div
-                        class="w-7 h-7 rounded-full bg-[#1448b1] text-white font-bold flex items-center justify-center text-xs">
-                        G
-                    </div>
-                    <span id="topUserName" class="text-xs font-semibold text-slate-700">Gabriel Silva</span>
-                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content Canvas -->
-        <div class="p-6 max-w-7xl w-full mx-auto space-y-5">
-
-            <!-- TAB 1: DASHBOARD -->
-            <section id="tab-dashboard" class="space-y-4">
-                <div>
-                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Olá, Gabriel!</h1>
-                    <p class="text-xs text-slate-500 font-medium">Quarta-feira, 24 de Outubro</p>
-                </div>
-
-                <!-- Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="dailyMenuContainer">
-                    <!-- Cards inseridos via JS -->
-                </div>
-            </section>
-
-        </div>
-    </main>
-
-    <!-- JavaScript Externo -->
-    <script src="cardapio.js"></script>
-</body>
-
->>>>>>> aa3895c586ae902ee1a69e3574ff5ddf1e4be9eb
 </html>

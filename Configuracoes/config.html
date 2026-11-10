@@ -1,49 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-role="admin" data-active="Configurações">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AmaralHub - Configurações</title>
-
-    <!-- Preferências globais (deve ser o primeiro script) -->
-    <script src="/global-preferences.js"></script>
-
-    <link rel="stylesheet" href="/dark-mode.css">
+    <title>GoSchool - Configurações</title>
+    <!-- Design System -->
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Página específica -->
     <link rel="stylesheet" href="config.css">
 </head>
 
-<body>
+<body class="page-wrapper">
 
-    <!-- SIDEBAR DINÂMICA UNIFICADA -->
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="/logo2.png" alt="Logo AH">
-        </div>
+    <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
+    <aside id="sidebar"></aside>
 
-        <nav class="menu" id="menu-lateral">
-            <a href="#" id="link-inicio" class="menu-item">Início</a>
-            <a href="#" id="link-cardapio" class="menu-item">Cardápio e Ingredientes</a>
-            <a href="/reservas" id="link-reservas" class="menu-item" style="display: none;">Gerenciar Reservas</a>
-            <a href="#" id="link-usuarios" class="menu-item" style="display: none;">Gestão de Usuários</a>
-            <a href="#" id="link-relatorios" class="menu-item" style="display: none;">Relatório</a>
-            <a href="/configuracoes/" class="menu-item active">Configurações</a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <div class="usuario">
-                <div class="usuario-icon">👤</div>
-                <span id="nome-usuario">Aluno</span>
-            </div>
-            <a href="/login" class="sair">
-                <span class="sair-icon">➔</span>
-                <span>Sair</span>
-            </a>
-        </div>
-    </aside>
-
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main>
+    <main class="main-content">
         <div class="main-wrapper">
 
             <!-- TOPO DA PÁGINA -->
@@ -253,6 +227,8 @@
         </div>
     </main>
 
+    <!-- Shared sidebar builder -->
+    <script src="../shared/sidebar.js"></script>
     <script src="config.js"></script>
 </body>
 

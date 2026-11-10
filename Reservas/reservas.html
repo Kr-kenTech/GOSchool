@@ -1,29 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-role="professor" data-active="Reservas">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservas - AmaralHub</title>
-    <link rel="stylesheet" href="/dark-mode.css">
-    <script src="/global-preferences.js"></script>
-    <script>
-        (function () {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.documentElement.classList.add('dark-theme');
-                window.addEventListener('DOMContentLoaded', () => {
-                    document.body.classList.add('dark-theme');
-                });
-            }
-        })();
-    </script>
+    <title>Reservas - GoSchool</title>
+    <!-- Design System -->
+    <link rel="stylesheet" href="../shared/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Página específica -->
     <link rel="stylesheet" href="reservas.css">
 </head>
 
-<body>
+<body class="page-wrapper">
 
-    <div class="pagina">
-        <aside class="sidebar">
+    <!-- SIDEBAR INJETADA PELO shared/sidebar.js -->
+    <aside id="sidebar"></aside>
+
+    <main class="main-content">
 
             <div class="logo">
                 <img src="/logo2.png" alt="Logo AH">
@@ -534,6 +528,10 @@
             setInterval(() => carregarReservas(), 5000);
         });
     </script>
+
+    <!-- Shared sidebar builder -->
+    <script src="../shared/sidebar.js"></script>
+</main>
 </body>
 
 </html>
