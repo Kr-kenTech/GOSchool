@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 
 const MAX_RETRIES = 3;
@@ -26,15 +27,40 @@ async function createPoolWithRetry(options, retryCount = 0) {
     }
 }
 
-// Initialize pool with retries (runs once at module load)
-let pool;
-(async () => {
-    pool = await createPoolWithRetry({
-        host: 'localhost',
-        user: 'root',
-        password: 'Eddsworld!1',
-        database: 'banco_amaral_hub'
-    });
-})();
+// Get MySQL config from environment variables
+function getMySQLConfig() {
+    return {
+        host: process.env.MYSQL_HOST || 'localhost',
+        port: parseInt(process.env.MYSQL_PORT) || 3306,
+        user: process.env.MYSQL_USER || 'root',
+        password: process.env.MYSQL_PASSWORD || '',
+        database: process.env.MYSQL_DATABASE || 'goschool'
+    };
+}
 
-module.exports = pool;
+// Initialize pool with retries (runs once at module load)
+const config = getMySQLConfig();
+console.log(`[db] Connecting to MySQL: ${config.host}:${config.port}/${config.database}`);
+
+// Check if demo mode is enabled but NODE_ENV is production
+if (process.env.DEMO_MODE === 'true' && process.env.NODE_ENV === 'production') {
+    console.error('[db] FATAL: DEMO_MODE=true cannot be used in production (NODE_ENV=production)');
+    process.exit(1);
+}
+
+const poolPromise = createPoolWithRetry(config)
+    .then(pool => {
+        console.log('[db] MySQL connection pool ready');
+        return pool;
+    });
+
+// Export an object with getPool() method and getMySQLConfig
+module.exports = {
+    getPool: () => poolPromise,
+    getMySQLConfig: getMySQLConfig,
+
+    // For backwards compatibility - allows awaiting the module directly
+    then: (onFulfilled, onRejected) => poolPromise.then(onFulfilled, onRejected),
+    catch: (onRejected) => poolPromise.catch(onRejected),
+    finally: (onFinally) => poolPromise.finally(onFinally)
+};
