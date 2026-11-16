@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOSchool - Desperdício</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Desperdicio/desperdicio.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" hidden>
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p class="loading-text">Carregando dashboard...</p>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GOSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="/Desperdicio/" class="menu-item active" id="nav-dashboard">Dashboard</a>
+            <a href="#" class="menu-item" id="nav-visao-geral">Visão Geral</a>
+            <a href="/Cardapio/" class="menu-item" id="nav-cardapio">Cardápio e Ingredientes</a>
+            <a href="#" class="menu-item" id="nav-usuarios" data-auth-role="adm">Gestão de Usuários</a>
+            <a href="#" class="menu-item" id="nav-relatorios" data-auth-role="adm">Relatórios</a>
+            <a href="/Configuracoes/" class="menu-item" id="nav-config">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon" aria-hidden="true">👤</div>
+                <span id="sidebarUserName" data-auth-user="name">Carregando...</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon" aria-hidden="true">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="header-title">
+                <h1>Relatórios de Desperdício</h1>
+                <p>Acompanhe os indicadores de desperdício de alimentos.</p>
+            </div>
+
+            <div class="header-actions">
+                <div class="period-selector" role="group" aria-label="Seletor de período">
+                    <button class="period-btn" data-periodo="hoje" aria-pressed="false">Hoje</button>
+                    <button class="period-btn active" data-periodo="semana" aria-pressed="true">Semana</button>
+                    <button class="period-btn" data-periodo="mes" aria-pressed="false">Mês</button>
+                    <button class="period-btn" data-periodo="ano" aria-pressed="false">Ano</button>
+                </div>
+
+                <div class="export-buttons">
+                    <button class="btn-secondary btn-icon" id="btn-export-pdf" title="Exportar PDF" aria-label="Exportar relatório em PDF">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <line x1="10" y1="9" x2="8" y2="9"></line>
+                            <line x1="16" y1="9" x2="14" y2="9"></line>
+                        </svg>
+                        <span>PDF</span>
+                    </button>
+                    <button class="btn-secondary btn-icon" id="btn-export-excel" title="Exportar Excel/CSV" aria-label="Exportar dados em CSV">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <line x1="10" y1="9" x2="14" y2="9"></line>
+                            <line x1="10" y1="13" x2="14" y2="13"></line>
+                        </svg>
+                        <span>CSV</span>
+                    </button>
+                </div>
+
+                <div class="user-profile" id="userProfile">
+                    <div class="avatar" id="topUserAvatar" aria-hidden="true"></div>
+                    <span id="topUserName" class="user-name">Carregando...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+
+            <!-- KPI Cards -->
+            <section class="kpi-section" aria-labelledby="kpi-title">
+                <h2 id="kpi-title" class="visually-hidden">Indicadores Principais</h2>
+                <div class="kpi-grid" id="kpiGrid">
+                    <article class="kpi-card">
+                        <div class="kpi-icon purple" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value" id="kpi-total-desperdicio">-- kg</h3>
+                            <p class="kpi-label">Desperdício Total</p>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card">
+                        <div class="kpi-icon blue" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 2v7c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V2"></path>
+                                <path d="M7 2v20"></path>
+                                <path d="M17 2v20"></path>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value" id="kpi-refeicoes-servidas">--</h3>
+                            <p class="kpi-label">Refeições Servidas</p>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card">
+                        <div class="kpi-icon amber" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value" id="kpi-taxa-desperdicio">--%</h3>
+                            <p class="kpi-label">Taxa de Desperdício</p>
+                        </div>
+                    </article>
+
+                    <article class="kpi-card">
+                        <div class="kpi-icon green" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 class="kpi-value" id="kpi-economia">R$ --</h3>
+                            <p class="kpi-label">Economia Estimada</p>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Demo badge -->
+                <div id="demoBadge" class="demo-badge" hidden>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    Modo demonstração — dados simulados
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section" aria-labelledby="charts-title">
+                <h2 id="charts-title" class="visually-hidden">Gráficos de Desperdício</h2>
+                <div class="charts-grid">
+                    <!-- Gráfico de Evolução (Linha) -->
+                    <article class="chart-card chart-card--large">
+                        <header class="chart-header">
+                            <h3 class="chart-title">Evolução do Desperdício</h3>
+                            <span id="badge-evolucao" class="demo-badge-inline" hidden>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Demo
+                            </span>
+                        </header>
+                        <div class="chart-container">
+                            <canvas id="chart-evolucao" height="300" aria-label="Gráfico de linha mostrando evolução do desperdício ao longo do tempo"></canvas>
+                        </div>
+                    </article>
+
+                    <!-- Gráfico de Distribuição (Rosca) -->
+                    <article class="chart-card">
+                        <header class="chart-header">
+                            <h3 class="chart-title">Distribuição por Refeição</h3>
+                            <span id="badge-distribuicao" class="demo-badge-inline" hidden>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Demo
+                            </span>
+                        </header>
+                        <div class="chart-container">
+                            <canvas id="chart-distribuicao" height="250" aria-label="Gráfico de rosca mostrando distribuição do desperdício por tipo de refeição"></canvas>
+                        </div>
+                    </article>
+
+                    <!-- Alertas -->
+                    <article class="chart-card">
+                        <header class="chart-header">
+                            <h3 class="chart-title">Alertas</h3>
+                        </header>
+                        <div class="alerts-container" id="alertsContainer">
+                            <ul class="alerts-list" id="lista-alertas">
+                                <li class="alert-loading">Carregando...</li>
+                            </ul>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Tables Section -->
+            <section class="tables-section" aria-labelledby="tables-title">
+                <h2 id="tables-title" class="visually-hidden">Tabelas Detalhadas</h2>
+                <div class="tables-grid">
+                    <!-- Ingredientes mais desperdiçados -->
+                    <article class="table-card">
+                        <header class="table-header">
+                            <h3 class="table-title">Ingredientes Mais Desperdiçados</h3>
+                            <span id="badge-ingredientes" class="demo-badge-inline" hidden>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Demo
+                            </span>
+                        </header>
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-ingredientes">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Ingrediente</th>
+                                        <th scope="col">Kg</th>
+                                        <th scope="col">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-ingredientes">
+                                    <tr><td colspan="3" class="table-loading">Carregando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+
+                    <!-- Resumo do período -->
+                    <article class="table-card">
+                        <header class="table-header">
+                            <h3 class="table-title">Resumo do Período</h3>
+                        </header>
+                        <div class="table-responsive">
+                            <table class="data-table summary-table" id="table-resumo">
+                                <tbody id="tbody-resumo">
+                                    <tr>
+                                        <th scope="row">Maior desperdício</th>
+                                        <td id="resumo-maior">--</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Menor desperdício</th>
+                                        <td id="resumo-menor">--</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Meta</th>
+                                        <td>5%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="/Desperdicio/desperdicio.js"></script>
+
+    <script>
+        // Estado do dashboard
+        let chartEvolucao = null;
+        let chartDistribuicao = null;
+        let periodoAtual = 'semana';
+        let isDemoData = false;
+
+        // Inicialização da autenticação - apenas Admin
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['adm']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout
+            const sairBtn = document.getElementById('btn-logout');
+            if (sairBtn) {
+                sairBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    Auth.logout();
+                });
+            }
+
+            // Configurar seletor de período
+            configurarSeletorPeriodo();
+
+            // Configurar exportação PDF
+            const btnExportPdf = document.getElementById('btn-export-pdf');
+            if (btnExportPdf) {
+                btnExportPdf.addEventListener('click', () => {
+                    alert('Exportação para PDF será disponibilizada em breve.');
+                });
+            }
+
+            // Configurar exportação Excel (CSV)
+            const btnExportExcel = document.getElementById('btn-export-excel');
+            if (btnExportExcel) {
+                btnExportExcel.addEventListener('click', async () => {
+                    try {
+                        const res = await Auth.apiCall(`/api/desperdicio/dashboard?periodo=${periodoAtual}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            const kpis = data.kpis || {};
+                            const csv = [
+                                ['Período', 'Desperdício (kg)', 'Refeições', 'Taxa (%)', 'Economia (R$)'],
+                                [periodoAtual, kpis.totalDesperdicio || 0, kpis.refeicoesServidas || 0, (kpis.taxaDesperdicio || 0).toFixed(1), kpis.economiaEstimada || 0]
+                            ].map(r => r.join(';')).join('\n');
+                            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `desperdicio-${periodoAtual}.csv`;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                        }
+                    } catch (e) {
+                        alert('Erro ao exportar dados.');
+                    }
+                });
+            }
+
+            // Carregar dados iniciais
+            await carregarDashboard();
+        });
+
+        function configurarSeletorPeriodo() {
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.period-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('active');
+                    btn.setAttribute('aria-pressed', 'true');
+                    periodoAtual = btn.dataset.periodo;
+                    carregarDashboard();
+                });
+            });
+        }
+
+        async function carregarDashboard() {
+            // Mostrar loading
+            document.getElementById('loadingOverlay').hidden = false;
+
+            try {
+                const res = await Auth.apiCall(`/api/desperdicio/dashboard?periodo=${periodoAtual}`);
+                if (!res.ok) throw new Error('Erro ao carregar dashboard');
+
+                const data = await res.json();
+                if (data.sucesso) {
+                    isDemoData = data.demo === true;
+                    atualizarKPIs(data.kpis);
+                    atualizarGraficos(data.graficos);
+                    atualizarAlertas(data.alertas);
+                    atualizarTabelas(data.tabelas);
+                    atualizarResumo(data.resumo);
+                    atualizarBadgesDemo();
+                }
+            } catch (err) {
+                console.error('[Desperdício] Erro ao carregar dashboard:', err);
+                // Exibe estado de erro/vazio
+                atualizarKPIs({ totalDesperdicio: 0, refeicoesServidas: 0, taxaDesperdicio: 0, economiaEstimada: 0 });
+                atualizarGraficos({ evolucao: { labels: [], data: [] }, distribuicao: { labels: [], data: [] } });
+                atualizarAlertas([{ mensagem: 'Não foi possível carregar os dados do dashboard. Tente novamente mais tarde.', nivel: 'erro' }]);
+                atualizarTabelas({ ingredientes: [] });
+                atualizarResumo({ maiorDesperdicio: '--', menorDesperdicio: '--' });
+                atualizarBadgesDemo();
+            } finally {
+                document.getElementById('loadingOverlay').hidden = true;
+            }
+        }
+
+        function atualizarKPIs(kpis) {
+            document.getElementById('kpi-total-desperdicio').textContent = `${kpis.totalDesperdicio || 0} kg`;
+            document.getElementById('kpi-refeicoes-servidas').textContent = `${kpis.refeicoesServidas || 0}`;
+            document.getElementById('kpi-taxa-desperdicio').textContent = `${(kpis.taxaDesperdicio || 0).toFixed(1)}%`;
+            document.getElementById('kpi-economia').textContent = `R$ ${kpis.economiaEstimada || 0}`;
+        }
+
+        function atualizarGraficos(graficos) {
+            // Gráfico de evolução (linha) - Canvas nativo
+            const canvasEvolucao = document.getElementById('chart-evolucao');
+            if (canvasEvolucao) {
+                desenharGraficoLinha(canvasEvolucao, graficos.evolucao || { labels: [], data: [] });
+            }
+
+            // Gráfico de distribuição (rosca) - Canvas nativo
+            const canvasDistribuicao = document.getElementById('chart-distribuicao');
+            if (canvasDistribuicao) {
+                desenharGraficoRosca(canvasDistribuicao, graficos.distribuicao || { labels: [], data: [] });
+            }
+        }
+
+        // Gráfico de linha nativo (Canvas API)
+        function desenharGraficoLinha(canvas, dados) {
+            const ctx = canvas.getContext('2d');
+            const labels = dados.labels || [];
+            const values = dados.data || [];
+
+            // Limpar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 50;
+            const chartWidth = canvas.width - 2 * padding;
+            const chartHeight = canvas.height - 2 * padding;
+
+            if (labels.length === 0 || values.length === 0) {
+                // Desenhar estado vazio
+                ctx.font = '14px var(--gs-font-sans)';
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--gs-text-muted').trim() || '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            const maxValue = Math.max(...values, 1);
+            const minValue = Math.min(...values);
+            const valueRange = maxValue - minValue || 1;
+
+            // Obter cores do design system
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--gs-primary').trim() || '#7c3aed';
+            const primaryLight = getComputedStyle(document.documentElement).getPropertyValue('--gs-primary-bg').trim() || 'rgba(124, 58, 237, 0.1)';
+            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--gs-text-secondary').trim() || '#64748b';
+            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--gs-border').trim() || '#e2e8f0';
+
+            // Desenhar grade
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+
+            // Linhas horizontais
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (chartHeight / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+
+                // Labels Y
+                const val = maxValue - (valueRange / 4) * i;
+                ctx.font = '11px var(--gs-font-sans)';
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'right';
+                ctx.fillText(val.toFixed(1), padding - 8, y + 4);
+            }
+
+            // Linhas verticais e labels X
+            for (let i = 0; i < labels.length; i++) {
+                const x = padding + (chartWidth / (labels.length - 1 || 1)) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, canvas.height - padding);
+                ctx.stroke();
+
+                ctx.font = '11px var(--gs-font-sans)';
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'center';
+                ctx.fillText(labels[i], x, canvas.height - padding + 20);
+            }
+
+            // Desenhar área preenchida
+            ctx.beginPath();
+            ctx.moveTo(padding, canvas.height - padding);
+
+            values.forEach((val, i) => {
+                const x = padding + (chartWidth / (labels.length - 1 || 1)) * i;
+                const y = canvas.height - padding - ((val - minValue) / valueRange) * chartHeight;
+                if (i === 0) {
+                    ctx.lineTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+
+            ctx.lineTo(padding + chartWidth, canvas.height - padding);
+            ctx.closePath();
+
+            // Gradient para preenchimento
+            const gradient = ctx.createLinearGradient(0, padding, 0, canvas.height - padding);
+            gradient.addColorStop(0, primaryColor.replace(')', ', 0.15)').replace('rgb', 'rgba').replace('#', ''));
+            gradient.addColorStop(1, primaryColor.replace(')', ', 0)').replace('rgb', 'rgba').replace('#', ''));
+
+            // Fallback para cores hex
+            try {
+                ctx.fillStyle = 'rgba(124, 58, 237, 0.1)';
+            } catch (e) {
+                ctx.fillStyle = primaryLight;
+            }
+            ctx.fill();
+
+            // Desenhar linha
+            ctx.beginPath();
+            ctx.strokeStyle = primaryColor;
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            values.forEach((val, i) => {
+                const x = padding + (chartWidth / (labels.length - 1 || 1)) * i;
+                const y = canvas.height - padding - ((val - minValue) / valueRange) * chartHeight;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+
+            // Desenhar pontos
+            ctx.fillStyle = primaryColor;
+            values.forEach((val, i) => {
+                const x = padding + (chartWidth / (labels.length - 1 || 1)) * i;
+                const y = canvas.height - padding - ((val - minValue) / valueRange) * chartHeight;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ponto branco interno
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = primaryColor;
+            });
+        }
+
+        // Gráfico de rosca nativo (Canvas API)
+        function desenharGraficoRosca(canvas, dados) {
+            const ctx = canvas.getContext('2d');
+            const labels = dados.labels || [];
+            const values = dados.data || [];
+
+            // Limpar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 30;
+            const innerRadius = radius * 0.6;
+
+            if (labels.length === 0 || values.length === 0) {
+                ctx.font = '14px var(--gs-font-sans)';
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--gs-text-muted').trim() || '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.fillText('Sem dados para exibir', centerX, centerY);
+                return;
+            }
+
+            const total = values.reduce((a, b) => a + b, 0);
+            const colors = [
+                '#7c3aed', // Roxo
+                '#2563eb', // Azul
+                '#f59e0b', // Laranja
+                '#10b981', // Verde
+                '#ef4444', // Vermelho
+                '#8b5cf6', // Violeta
+                '#ec4899', // Rosa
+                '#06b6d4'  // Ciano
+            ];
+
+            let currentAngle = -Math.PI / 2;
+
+            values.forEach((value, i) => {
+                const sliceAngle = (value / total) * Math.PI * 2;
+                const color = colors[i % colors.length];
+
+                // Desenhar fatia
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Desenhar label se a fatia for grande o suficiente
+                if (sliceAngle > 0.3) {
+                    const labelAngle = currentAngle + sliceAngle / 2;
+                    const labelX = centerX + Math.cos(labelAngle) * (radius + innerRadius) / 2;
+                    const labelY = centerY + Math.sin(labelAngle) * (radius + innerRadius) / 2;
+
+                    ctx.font = 'bold 12px var(--gs-font-sans)';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(labels[i], labelX, labelY);
+                }
+
+                currentAngle += sliceAngle;
+            });
+
+            // Texto central
+            ctx.font = 'bold 20px var(--gs-font-sans)';
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--gs-text-primary').trim() || '#1e293b';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${total} kg`, centerX, centerY - 10);
+
+            ctx.font = '12px var(--gs-font-sans)';
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--gs-text-secondary').trim() || '#64748b';
+            ctx.fillText('Total desperdiçado', centerX, centerY + 15);
+
+            // Legenda
+            const legendY = canvas.height - 60;
+            let legendX = 20;
+            labels.forEach((label, i) => {
+                if (legendX > canvas.width - 150) {
+                    legendX = 20;
+                }
+
+                const color = colors[i % colors.length];
+                const percent = ((values[i] / total) * 100).toFixed(1);
+
+                // Quadradinho de cor
+                ctx.fillStyle = color;
+                ctx.fillRect(legendX, legendY, 12, 12);
+
+                // Texto
+                ctx.font = '11px var(--gs-font-sans)';
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--gs-text-primary').trim() || '#1e293b';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${label} (${percent}%)`, legendX + 18, legendY + 6);
+
+                legendX += ctx.measureText(`${label} (${percent}%)`).width + 30;
+            });
+        }
+
+        function atualizarAlertas(alertas) {
+            const lista = document.getElementById('lista-alertas');
+            if (!alertas || alertas.length === 0) {
+                lista.innerHTML = '<li class="alert-empty">Nenhum alerta no período</li>';
+                return;
+            }
+
+            lista.innerHTML = alertas.map(a => `
+                <li class="alert-item ${a.nivel || ''}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="alert-icon ${a.nivel || ''}">
+                        ${a.nivel === 'erro' ? '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>' : '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>'}
+                    </svg>
+                    <span class="alert-text">${escapeHtml(a.mensagem)}</span>
+                </li>
+            `).join('');
+        }
+
+        function atualizarTabelas(tabelas) {
+            const tbody = document.getElementById('tbody-ingredientes');
+            if (!tabelas?.ingredientes || tabelas.ingredientes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="table-empty">Nenhum dado disponível</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = tabelas.ingredientes.map(item => `
+                <tr>
+                    <td>${escapeHtml(item.nome)}</td>
+                    <td>${item.kg} kg</td>
+                    <td>${item.percentual}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarResumo(resumo) {
+            document.getElementById('resumo-maior').textContent = resumo?.maiorDesperdicio || '--';
+            document.getElementById('resumo-menor').textContent = resumo?.menorDesperdicio || '--';
+        }
+
+        function atualizarBadgesDemo() {
+            const badges = document.querySelectorAll('.demo-badge, .demo-badge-inline');
+            badges.forEach(badge => {
+                badge.hidden = !isDemoData;
+            });
+        }
+
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '"')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Redesenhar gráficos ao redimensionar janela
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                carregarDashboard();
+            }, 300);
+        });
+    </script>
+</body>
+</html>

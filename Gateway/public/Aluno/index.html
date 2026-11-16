@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOSchool - Dashboard do Aluno</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Aluno/aluno.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+<body>
+    <!-- SIDEBAR DO ALUNO -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GOSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="/Aluno/" class="menu-item active" id="nav-inicio">Início</a>
+            <a href="/Cardapio/" class="menu-item" id="nav-cardapio">Cardápio</a>
+            <a href="/Cardapio/" class="menu-item" id="nav-ingredientes">Ingredientes</a>
+            <a href="/Reservas/" class="menu-item" id="nav-reservas">Reservas</a>
+            <a href="/Configuracoes/" class="menu-item" id="nav-config">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon" aria-hidden="true">👤</div>
+                <span id="sidebarUserName" data-auth-user="name">Olá, Aluno!</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon" aria-hidden="true">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+
+    <!-- CONTEÚDO PRINCIPAL DO ALUNO -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="header-title">
+                <h1 id="saudacao-usuario">Olá, Aluno(a)!</h1>
+                <p>Bem-vindo(a) ao seu painel no GOSchool</p>
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" id="notificationsBtn" title="Notificações" aria-label="Notificações">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge" hidden></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="dashboard-section" aria-labelledby="cardapio-title">
+                <header class="section-header">
+                    <div class="section-title-group">
+                        <span class="section-icon" aria-hidden="true">📋</span>
+                        <h2 id="cardapio-title">Cardápio do Dia</h2>
+                    </div>
+                </header>
+
+                <div class="meals-grid" id="cardapio-grid">
+                    <!-- Carregado via API -->
+                    <div class="loading-state" role="status" aria-live="polite">
+                        <div class="loading-spinner" aria-hidden="true"></div>
+                        <p>Carregando cardápio...</p>
+                    </div>
+                </div>
+
+                <!-- Alerta de Alergia específico para perfil de Aluno -->
+                <div id="alergia-container" class="alert-card" hidden>
+                    <div class="alert-content">
+                        <span class="alert-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </span>
+                        <div class="alert-text">
+                            <strong>Restrições Alimentares</strong>
+                            <span id="alergia-texto">Carregando...</span>
+                        </div>
+                    </div>
+                    <button id="perfil" class="btn-secondary">Editar Perfil</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Inicialização da autenticação - apenas para perfil aluno
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inicializar auth - requer role 'aluno'
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['aluno']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            // Configurar botão Editar Perfil
+            const btnPerfil = document.getElementById('perfil');
+            if (btnPerfil) {
+                btnPerfil.addEventListener('click', () => {
+                    window.location.href = '/Configuracoes/';
+                });
+            }
+
+            // Configurar botão Notificações
+            const btnNotificacao = document.getElementById('notificationsBtn');
+            if (btnNotificacao) {
+                btnNotificacao.addEventListener('click', () => {
+                    alert('Não há notificações novas no momento.');
+                });
+            }
+
+            // Carregar cardápio do dia via API
+            await carregarCardapioDia();
+
+            // Carregar alertas de alergia
+            await carregarAlertasAlergia();
+
+            // Inicializar sidebar mobile
+            inicializarSidebarMobile();
+        });
+
+        async function carregarCardapioDia() {
+            try {
+                const res = await Auth.apiCall('/api/cardapio/hoje');
+                if (!res.ok) throw new Error('Erro ao carregar cardápio');
+
+                const data = await res.json();
+                if (data.sucesso && data.cardapio) {
+                    renderizarCardapio(data.cardapio);
+                } else {
+                    renderizarCardapio([]);
+                }
+            } catch (err) {
+                console.error('[Aluno] Erro ao carregar cardápio:', err);
+                document.getElementById('cardapio-grid').innerHTML =
+                    '<div class="error-state">Erro ao carregar cardápio. Tente novamente mais tarde.</div>';
+            }
+        }
+
+        function renderizarCardapio(cardapio) {
+            const grid = document.getElementById('cardapio-grid');
+            if (!cardapio || cardapio.length === 0) {
+                grid.innerHTML = '<div class="empty-state">Nenhum cardápio disponível para hoje.</div>';
+                return;
+            }
+
+            grid.innerHTML = cardapio.map(item => `
+                <article class="meal-card" role="listitem">
+                    <div class="meal-card-image">
+                        ${item.imagem
+                            ? `<img src="${escapeHtml(item.imagem)}" alt="${escapeHtml(item.nome || 'Refeição')}" loading="lazy">`
+                            : `<div class="meal-placeholder" aria-hidden="true"></div>`}
+                        ${item.alertaAlergia === true ? `
+                            <span class="meal-badge alert-badge" aria-label="Alerta de alergia">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                ALERTA
+                            </span>
+                        ` : ''}
+                    </div>
+                    <div class="meal-card-content">
+                        <div class="meal-card-header">
+                            <span class="meal-category ${item.categoria || item.tipo_refeicao || ''}">${formatCategoria(item.categoria || item.tipo_refeicao || 'Refeição')}</span>
+                            ${item.horario ? `<span class="meal-time" aria-label="Horário">${escapeHtml(item.horario)}</span>` : ''}
+                        </div>
+                        <h3 class="meal-card-title">${escapeHtml(item.nome || 'Refeição do Dia')}</h3>
+                        <p class="meal-allergens" role="status" aria-live="polite">
+                            ${item.alergicos && item.alergicos.length > 0
+                                ? `<span class="tag tag-amber"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Contém: ${escapeHtml(item.alergicos.join(', '))}</span>`
+                                : `<span class="tag tag-green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> Sem alergênicos declarados</span>`
+                            }
+                        </p>
+                        <button class="btn-secondary btn-sm" onclick="verDetalhes('${item.id}')">Informações</button>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        async function carregarAlertasAlergia() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/alergias');
+                if (!res.ok) throw new Error('Erro ao carregar alergias');
+
+                const data = await res.json();
+                if (data.sucesso && data.alergias && data.alergias.length > 0) {
+                    const container = document.getElementById('alergia-container');
+                    const texto = document.getElementById('alergia-texto');
+                    texto.innerHTML = `<strong>Seus alergênicos:</strong> ${data.alergias.map(escapeHtml).join(', ')}`;
+                    container.hidden = false;
+                }
+            } catch (err) {
+                console.warn('[Aluno] Não foi possível carregar alergias:', err);
+            }
+        }
+
+        function verDetalhes(id) {
+            alert('Detalhes da refeição ID: ' + id);
+        }
+
+        function formatCategoria(cat) {
+            const labels = {
+                'cafe_manha': 'Café da Manhã',
+                'almoco': 'Almoço',
+                'lanche': 'Lanche',
+                'jantar': 'Jantar'
+            };
+            return labels[cat] || cat;
+        }
+
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '"')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Sidebar Mobile
+        function inicializarSidebarMobile() {
+            const hamburger = document.getElementById('hamburgerBtn');
+            const overlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('sidebar');
+
+            if (hamburger) {
+                hamburger.addEventListener('click', toggleSidebar);
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', closeSidebar);
+            }
+
+            // Fechar sidebar ao clicar em link no mobile
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+
+            if (sidebar && overlay && hamburger) {
+                const isOpen = sidebar.classList.toggle('open');
+                overlay.hidden = !isOpen;
+                hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.hidden = true;
+            if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
+        }
+    </script>
+</body>
+</html>

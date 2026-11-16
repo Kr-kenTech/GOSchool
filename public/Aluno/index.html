@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoSchool - Dashboard do Aluno</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Aluno/aluno.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR DO ALUNO -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GoSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="/Aluno/" class="menu-item active">Início</a>
+            <a href="/Cardapio/cardapio.html" class="menu-item">Cardápio</a>
+            <a href="/Cardapio/cardapio.html" class="menu-item">Ingredientes</a>
+            <a href="/Reservas/" class="menu-item">Reservas</a>
+            <a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon">👤</div>
+                <span data-auth-user="name">Olá, Aluno!</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL DO ALUNO -->
+    <main class="conteudo-principal">
+        <div class="main-wrapper">
+            <header id="introducao">
+                <div>
+                    <h1 id="saudacao-usuario">Olá, Aluno(a)!</h1>
+                    <p>Bem-vindo(a) ao seu painel no GoSchool</p>
+                </div>
+                <button class="notificacao" aria-label="Notificações">🔔</button>
+            </header>
+
+            <section id="conteiner">
+                <div class="cardapio-header">
+                    <div class="titulo-cardapio">
+                        <span class="icone-cardapio">📋</span>
+                        <h2>Cardápio do Dia</h2>
+                    </div>
+                </div>
+
+                <div class="cardapio-grid" id="cardapio-grid">
+                    <!-- Carregado via API -->
+                    <div class="loading-cardapio">Carregando cardápio...</div>
+                </div>
+
+                <!-- Alerta de Alergia específico para perfil de Aluno -->
+                <div id="alergia-container" class="alerta-alergia-box" style="display: none;">
+                    <div class="alerta-conteudo">
+                        <span class="alerta-icon">⚠️</span>
+                        <div class="alerta-texto">
+                            <strong>Restrições Alimentares</strong>
+                            <span id="alergia-texto">Carregando...</span>
+                        </div>
+                    </div>
+                    <button id="perfil" class="btn-editar-perfil">Editar Perfil</button>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script>
+        // Inicialização da autenticação - apenas para perfil aluno
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inicializar auth - requer role 'aluno'
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['aluno']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            // Configurar botão Editar Perfil
+            const btnPerfil = document.getElementById('perfil');
+            if (btnPerfil) {
+                btnPerfil.addEventListener('click', () => {
+                    window.location.href = '/Configuracoes/config.html';
+                });
+            }
+
+            // Configurar botão Notificações
+            const btnNotificacao = document.querySelector('.notificacao');
+            if (btnNotificacao) {
+                btnNotificacao.addEventListener('click', () => {
+                    alert('Não há notificações novas no momento.');
+                });
+            }
+
+            // Carregar cardápio do dia via API
+            await carregarCardapioDia();
+
+            // Carregar alertas de alergia
+            await carregarAlertasAlergia();
+        });
+
+        async function carregarCardapioDia() {
+            try {
+                const res = await Auth.apiCall('/api/cardapio/hoje');
+                if (!res.ok) throw new Error('Erro ao carregar cardápio');
+
+                const data = await res.json();
+                if (data.sucesso && data.cardapio) {
+                    renderizarCardapio(data.cardapio);
+                }
+            } catch (err) {
+                console.error('[Aluno] Erro ao carregar cardápio:', err);
+                document.getElementById('cardapio-grid').innerHTML =
+                    '<div class="erro-cardapio">Erro ao carregar cardápio. Tente novamente mais tarde.</div>';
+            }
+        }
+
+        function renderizarCardapio(cardapio) {
+            const grid = document.getElementById('cardapio-grid');
+            if (!cardapio || cardapio.length === 0) {
+                grid.innerHTML = '<div class="sem-cardapio">Nenhum cardápio disponível para hoje.</div>';
+                return;
+            }
+
+            grid.innerHTML = cardapio.map(item => `
+                <article class="refeicao">
+                    <div class="etiquetas">
+                        <span class="etiqueta hoje">Hoje</span>
+                        <span class="etiqueta horario">${item.categoria || item.tipo_refeicao || 'Refeição'}</span>
+                    </div>
+                    <div class="imagem-container">
+                        ${item.imagem
+                            ? `<img src="${item.imagem}" alt="${escapeHtml(item.nome || 'Refeição')}">`
+                            : `<div class="placeholder-img" aria-hidden="true"></div>`}
+                    </div>
+                    <h3>${item.nome || 'Refeição do Dia'}</h3>
+                    <p class="alergeno">${item.alergicos ? '⚠️ Contém: ' + item.alergicos.join(', ') : '✅ Sem alergênicos declarados'}</p>
+                    <button class="informacoes" onclick="verDetalhes('${item.id}')">Informações</button>
+                </article>
+            `).join('');
+        }
+
+        async function carregarAlertasAlergia() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/alergias');
+                if (!res.ok) throw new Error('Erro ao carregar alergias');
+
+                const data = await res.json();
+                if (data.sucesso && data.alergias && data.alergias.length > 0) {
+                    const container = document.getElementById('alergia-container');
+                    const texto = document.getElementById('alergia-texto');
+                    texto.innerHTML = `<strong>Seus alergênicos:</strong> ${data.alergias.join(', ')}`;
+                    container.style.display = 'block';
+                }
+            } catch (err) {
+                console.warn('[Aluno] Não foi possível carregar alergias:', err);
+            }
+        }
+
+        function verDetalhes(id) {
+            alert('Detalhes da refeição ID: ' + id);
+        }
+
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+
+</html>

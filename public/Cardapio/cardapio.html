@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoSchool — Cardápio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS Externo -->
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Cardapio/cardapio.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col md:flex-row antialiased overflow-x-hidden">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex flex-col items-center justify-center text-white hidden">
+        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-3"></div>
+        <p class="text-sm font-medium">Carregando...</p>
+    </div>
+
+    <!-- Modal 403 Forbidden -->
+    <div id="modal403" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center border-t-4 border-red-600">
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Acesso Restrito</h3>
+            <p class="text-slate-600 text-xs mb-4">Apenas leitura para perfil Aluno.</p>
+            <button onclick="close403Modal()" class="w-full bg-slate-900 text-white font-semibold py-2 rounded-xl text-xs">Fechar</button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GoSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="#" class="menu-item active" id="nav-dashboard" onclick="switchTab('dashboard')">Dashboard</a>
+            <a href="#" class="menu-item" id="nav-weekly" onclick="switchTab('weekly')">Cardápio Semanal</a>
+            <a href="#" class="menu-item" id="nav-nutrition" onclick="switchTab('nutrition')">Nutrição</a>
+            <a href="#" class="menu-item" id="nav-restrictions" onclick="switchTab('restrictions')">Restrições</a>
+            <a href="#" class="menu-item" id="nav-history" onclick="switchTab('history')">Histórico</a>
+            <a href="#" class="menu-item" id="nav-settings" onclick="switchTab('settings')">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon">👤</div>
+                <span id="sidebarUserName" data-auth-user="name">Carregando...</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
+
+        <!-- Top Header Bar -->
+        <header class="bg-white border-b border-slate-200/80 px-8 py-3 flex items-center justify-end sticky top-0 z-10">
+            <!-- Top Right Profile -->
+            <div class="flex items-center gap-4">
+                <button class="relative text-slate-400 hover:text-slate-600" title="Notificações">
+                    <i class="fa-regular fa-bell text-base"></i>
+                    <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+
+                <div class="flex items-center gap-2 cursor-pointer">
+                    <div class="w-7 h-7 rounded-full bg-[#0d47a1] text-white font-bold flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <span id="topUserName" class="text-xs font-semibold text-slate-700">Carregando...</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Canvas -->
+        <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
+
+            <!-- TAB 1: DASHBOARD (Cardápio de Hoje) -->
+            <section id="tab-dashboard" class="space-y-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight" id="dashboardGreeting">Carregando...</h1>
+                    <p class="text-xs text-slate-500 font-medium mt-1" id="dashboardDate"></p>
+                </div>
+
+                <!-- Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="dailyMenuContainer">
+                    <!-- Cards inseridos via JS -->
+                </div>
+            </section>
+
+            <!-- TAB 2: CARDÁPIO SEMANAL -->
+            <section id="tab-weekly" class="space-y-6 hidden">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Cardápio da Semana</h1>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Visualize todas as refeições da semana</p>
+                </div>
+
+                <!-- Weekly Grid Container -->
+                <div class="space-y-8" id="weeklyMenuContainer">
+                    <!-- Cards por dia inseridos via JS -->
+                </div>
+            </section>
+
+            <!-- TAB 3: NUTRIÇÃO -->
+            <section id="tab-nutrition" class="space-y-6 hidden">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Informações Nutricionais</h1>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Detalhes nutricionais das refeições</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <p class="text-slate-500 text-center py-8">Selecione uma refeição no cardápio para ver detalhes nutricionais completos.</p>
+                </div>
+            </section>
+
+            <!-- TAB 4: RESTRIÇÕES -->
+            <section id="tab-restrictions" class="space-y-6 hidden">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Restrições Alimentares</h1>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Gerencie alergênicos e restrições dietéticas</p>
+                </div>
+
+                <div id="restrictionsContent" class="space-y-6">
+                    <!-- Conteúdo dinâmico baseado no perfil -->
+                </div>
+            </section>
+
+            <!-- TAB 5: HISTÓRICO -->
+            <section id="tab-history" class="space-y-6 hidden">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Histórico de Cardápios</h1>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Cardápios de semanas anteriores</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <p class="text-slate-500 text-center py-8">Histórico de cardápios será implementado em breve.</p>
+                </div>
+            </section>
+
+            <!-- TAB 6: CONFIGURAÇÕES (Admin only) -->
+            <section id="tab-settings" class="space-y-6 hidden" data-auth-role="adm">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Gerenciar Cardápio</h1>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Cadastrar, editar e excluir refeições</p>
+                </div>
+
+                <div id="adminCardapioContent" class="space-y-6">
+                    <!-- Formulário de criação/edição -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6" id="mealFormContainer">
+                        <h2 class="text-xl font-bold text-slate-900 mb-4" id="mealFormTitle">Nova Refeição</h2>
+                        <form id="mealForm" class="space-y-4">
+                            <input type="hidden" id="mealId" name="id">
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Refeição <span class="text-red-500">*</span></label>
+                                    <input type="text" id="mealNome" name="nome" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Categoria <span class="text-red-500">*</span></label>
+                                    <select id="mealCategoria" name="categoria" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="">Selecione...</option>
+                                        <option value="cafe_manha">Café da Manhã</option>
+                                        <option value="almoco">Almoço</option>
+                                        <option value="lanche">Lanche</option>
+                                        <option value="jantar">Jantar</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Descrição</label>
+                                <textarea id="mealDescricao" name="descricao" rows="3" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Dia da Semana</label>
+                                    <select id="mealDiaSemana" name="dia_semana" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <option value="">Selecione...</option>
+                                        <option value="segunda">Segunda-feira</option>
+                                        <option value="terca">Terça-feira</option>
+                                        <option value="quarta">Quarta-feira</option>
+                                        <option value="quinta">Quinta-feira</option>
+                                        <option value="sexta">Sexta-feira</option>
+                                        <option value="sabado">Sábado</option>
+                                        <option value="domingo">Domingo</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Horário</label>
+                                    <input type="time" id="mealHorario" name="horario" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Calorias (kcal)</label>
+                                    <input type="number" id="mealCalorias" name="calorias" min="0" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Proteína (g)</label>
+                                    <input type="number" id="mealProteina" name="proteina" min="0" step="0.1" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Carboidratos (g)</label>
+                                    <input type="number" id="mealCarboidrato" name="carboidrato" min="0" step="0.1" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Imagem (URL)</label>
+                                    <input type="url" id="mealImagem" name="imagem" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://...">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Alergênicos</label>
+                                <div class="flex flex-wrap gap-2" id="allergenCheckboxes">
+                                    <!-- Preenchido via JS -->
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">Selecione os alergênicos presentes nesta refeição.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Observações</label>
+                                <textarea id="mealObservacoes" name="observacoes" rows="2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+
+                            <div class="flex gap-3 pt-4 border-t border-slate-100">
+                                <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors" id="mealSubmitBtn">
+                                    Salvar Refeição
+                                </button>
+                                <button type="button" id="mealCancelBtn" class="px-6 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors hidden">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de refeições para gerenciar -->
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-slate-100">
+                            <h3 class="text-lg font-bold text-slate-900">Refeições Cadastradas</h3>
+                        </div>
+                        <div class="divide-y divide-slate-100" id="mealListContainer">
+                            <!-- Lista inserida via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- JavaScript Externo -->
+    <script src="cardapio.js"></script>
+
+    <script>
+        // Inicialização da autenticação para Cardápio
+        // Aluno, Professor e Admin podem acessar (leitura)
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['aluno', 'professor', 'adm']
+            });
+
+            if (!authenticated) return;
+
+            // Atualizar UI do usuário
+            const user = Auth.getCurrentUser();
+            if (user) {
+                atualizarUIUsuario(user);
+            }
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            // Inicializar cardapio.js após auth
+            if (typeof inicializarCardapio === 'function') {
+                inicializarCardapio();
+            }
+        });
+
+        function atualizarUIUsuario(user) {
+            const roleLabels = {
+                'aluno': 'ALUNO',
+                'professor': 'PROFESSOR',
+                'adm': 'ADMINISTRADOR'
+            };
+
+            const roleText = roleLabels[user.tipo] || user.tipo.toUpperCase();
+            const nome = user.nome || 'Usuário';
+
+            // Sidebar
+            document.getElementById('sidebarUserName').textContent = nome;
+
+            // Top header
+            document.getElementById('topUserName').textContent = nome;
+
+            // Dashboard greeting
+            document.getElementById('dashboardGreeting').textContent = `Olá, ${nome.split(' ')[0]}! Cardápio de Hoje`;
+
+            // Date
+            const hoje = new Date();
+            const opcoes = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('dashboardDate').textContent = hoje.toLocaleDateString('pt-BR', opcoes);
+        }
+
+        function close403Modal() {
+            document.getElementById('modal403').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

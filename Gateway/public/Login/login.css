@@ -1,0 +1,382 @@
+/* ==========================================
+   GOSchool — Login Page
+   Estilo consistente com inicio.html (Design System)
+   ========================================== */
+
+.login-main {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--gs-spacing-xl) var(--gs-spacing-md);
+    background: var(--gs-surface);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+}
+
+/* Botão Voltar */
+.btn-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gs-spacing-xs);
+    color: var(--gs-primary);
+    text-decoration: none;
+    font-size: var(--gs-font-size-sm);
+    font-weight: var(--gs-font-weight-semibold);
+    margin-bottom: var(--gs-spacing-lg);
+    transition: all var(--gs-transition-fast);
+}
+
+.btn-voltar:hover {
+    color: var(--gs-primary-active);
+    gap: var(--gs-spacing-sm);
+}
+
+.btn-voltar:focus-visible {
+    outline: 2px solid var(--gs-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--gs-radius-sm);
+}
+
+/* Login Container */
+.login-container {
+    background: var(--gs-surface);
+    border: 1px solid var(--gs-border);
+    border-radius: var(--gs-radius-lg);
+    padding: var(--gs-spacing-xl);
+    box-shadow: var(--gs-shadow);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--gs-spacing-xl);
+}
+
+.logo-container {
+    margin-bottom: var(--gs-spacing-md);
+}
+
+.login-logo {
+    max-width: 140px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.login-title {
+    font-family: var(--gs-font-display);
+    font-size: clamp(28px, 5vw, 36px);
+    font-weight: var(--gs-font-weight-extrabold);
+    color: var(--gs-primary);
+    margin: 0 0 var(--gs-spacing-xs) 0;
+    letter-spacing: -0.02em;
+}
+
+.login-subtitle {
+    font-size: var(--gs-font-size-base);
+    color: var(--gs-text-secondary);
+    margin: 0;
+    line-height: var(--gs-line-height-relaxed);
+}
+
+/* Form */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gs-spacing-lg);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gs-spacing-xs);
+    text-align: left;
+}
+
+.form-label {
+    font-size: var(--gs-font-size-sm);
+    font-weight: var(--gs-font-weight-semibold);
+    color: var(--gs-text-primary);
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--gs-spacing-sm) var(--gs-spacing-md);
+    font-size: var(--gs-font-size-base);
+    font-family: var(--gs-font-sans);
+    color: var(--gs-text-primary);
+    background: var(--gs-surface);
+    border: 1px solid var(--gs-border);
+    border-radius: var(--gs-radius);
+    transition: border-color var(--gs-transition-fast), box-shadow var(--gs-transition-fast);
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--gs-border-focus);
+    box-shadow: 0 0 0 3px var(--gs-primary-subtle);
+}
+
+[data-theme="escuro"] .form-input:focus {
+    box-shadow: 0 0 0 3px var(--gs-info-bg);
+}
+
+.form-input::placeholder {
+    color: var(--gs-text-muted);
+}
+
+.form-input:disabled {
+    background: var(--gs-background-secondary);
+    color: var(--gs-text-muted);
+    cursor: not-allowed;
+}
+
+/* Botão Entrar */
+.btn-login {
+    width: 100%;
+    padding: var(--gs-spacing-md) var(--gs-spacing-xl);
+    font-size: var(--gs-font-size-base);
+    font-weight: var(--gs-font-weight-semibold);
+    font-family: var(--gs-font-sans);
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gs-spacing-sm);
+    background: var(--gs-primary);
+    color: var(--gs-text-on-primary);
+    border: none;
+    border-radius: var(--gs-radius);
+    cursor: pointer;
+    transition: all var(--gs-transition-base);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--gs-primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+    background: var(--gs-primary-active);
+    transform: translateY(0);
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid var(--gs-border-focus);
+    outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Error Message */
+.error-message {
+    min-height: 20px;
+    font-size: var(--gs-font-size-sm);
+    color: var(--gs-danger);
+    text-align: center;
+    margin: 0;
+}
+
+.error-message:empty {
+    display: none;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: var(--gs-spacing-md);
+    margin: var(--gs-spacing-md) 0;
+    color: var(--gs-text-muted);
+    font-size: var(--gs-font-size-sm);
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--gs-border);
+}
+
+/* Google Button Container */
+.google-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Ajuda Cadastro */
+.ajuda-cadastro {
+    text-align: center;
+    padding-top: var(--gs-spacing-lg);
+    border-top: 1px solid var(--gs-border);
+}
+
+.ajuda-text {
+    font-size: var(--gs-font-size-sm);
+    font-weight: var(--gs-font-weight-semibold);
+    color: var(--gs-primary);
+    margin: 0 0 var(--gs-spacing-xs) 0;
+}
+
+.ajuda-desc {
+    font-size: var(--gs-font-size-sm);
+    color: var(--gs-text-secondary);
+    margin: 0;
+    line-height: var(--gs-line-height-relaxed);
+}
+
+/* Demo Login */
+.demo-login {
+    margin-top: var(--gs-spacing-xl);
+    padding-top: var(--gs-spacing-lg);
+    border-top: 1px solid var(--gs-border);
+}
+
+.demo-divider {
+    border: none;
+    border-top: 1px solid var(--gs-border);
+    margin: 0 0 var(--gs-spacing-md) 0;
+}
+
+.demo-label {
+    font-size: var(--gs-font-size-xs);
+    font-weight: var(--gs-font-weight-semibold);
+    color: var(--gs-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 var(--gs-spacing-xs) 0;
+    text-align: center;
+}
+
+.demo-desc {
+    font-size: var(--gs-font-size-sm);
+    color: var(--gs-text-muted);
+    margin: 0 0 var(--gs-spacing-lg) 0;
+    text-align: center;
+}
+
+.demo-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gs-spacing-md);
+}
+
+.demo-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--gs-spacing-md);
+    padding: var(--gs-spacing-md) var(--gs-spacing-lg);
+    background: var(--gs-background-secondary);
+    border: 2px solid var(--gs-border);
+    border-radius: var(--gs-radius);
+    cursor: pointer;
+    transition: all var(--gs-transition-base);
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+    color: var(--gs-text-primary);
+}
+
+.demo-btn:hover:not(:disabled) {
+    background: var(--gs-surface-hover);
+    border-color: var(--gs-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--gs-shadow);
+}
+
+.demo-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.demo-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.demo-btn-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    width: 44px;
+    text-align: center;
+}
+
+.demo-btn-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    flex: 1;
+}
+
+.demo-btn-text strong {
+    font-size: var(--gs-font-size-base);
+    color: var(--gs-text-primary);
+    font-weight: var(--gs-font-weight-semibold);
+}
+
+.demo-btn-text small {
+    font-size: var(--gs-font-size-xs);
+    color: var(--gs-text-muted);
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+    .login-main {
+        padding: var(--gs-spacing-md);
+    }
+
+    .login-container {
+        padding: var(--gs-spacing-lg);
+    }
+
+    .btn-voltar {
+        margin-bottom: var(--gs-spacing-md);
+    }
+
+    .login-logo {
+        max-width: 220px;
+    }
+
+    .login-title {
+        font-size: clamp(24px, 6vw, 30px);
+    }
+
+    .demo-btn {
+        padding: var(--gs-spacing-sm) var(--gs-spacing-md);
+    }
+
+    .demo-btn-icon {
+        font-size: 20px;
+        width: 36px;
+    }
+
+    .demo-btn-text strong {
+        font-size: var(--gs-font-size-sm);
+    }
+
+    .demo-btn-text small {
+        font-size: 10px;
+    }
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+    .btn-voltar,
+    .btn-primary,
+    .demo-btn,
+    .form-input {
+        transition-duration: 0.01ms !important;
+    }
+}

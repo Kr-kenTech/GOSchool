@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOSchool - Configurações</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Configuracoes/config.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+<body>
+    <!-- SIDEBAR DAS CONFIGURAÇÕES -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GOSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="/Configuracoes/" class="menu-item active" id="nav-perfil">Perfil</a>
+            <a href="/Configuracoes/?tab=preferencias" class="menu-item" id="nav-preferencias">Preferências</a>
+            <a href="/Configuracoes/?tab=alergias" class="menu-item" id="nav-alergias">Alergias</a>
+            <a href="/Configuracoes/?tab=notificacoes" class="menu-item" id="nav-notificacoes">Notificações</a>
+            <a href="/Configuracoes/?tab=seguranca" class="menu-item" id="nav-seguranca">Segurança</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon" aria-hidden="true">⚙️</div>
+                <span id="sidebarUserName" data-auth-user="name">Olá, Usuário!</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon" aria-hidden="true">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+
+    <!-- CONTEÚDO PRINCIPAL DAS CONFIGURAÇÕES -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="header-title">
+                <h1>Configurações</h1>
+                <p id="pageSubtitle">Gerencie suas preferências e dados da conta</p>
+            </div>
+
+            <div class="header-actions">
+                <div class="user-profile" id="userProfile" role="button" tabindex="0" aria-label="Perfil do usuário">
+                    <div class="avatar" id="userAvatar" aria-hidden="true">U</div>
+                    <span class="user-name" id="userName">Usuário</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Abas -->
+            <div class="config-tabs" role="tablist" aria-label="Seções de configurações" id="configTabs">
+                <button role="tab" id="tab-perfil" class="config-tab-btn active" aria-selected="true" aria-controls="panel-perfil" data-tab="perfil">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Perfil
+                </button>
+                <button role="tab" id="tab-preferencias" class="config-tab-btn" aria-selected="false" aria-controls="panel-preferencias" data-tab="preferencias">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    Preferências
+                </button>
+                <button role="tab" id="tab-alergias" class="config-tab-btn" aria-selected="false" aria-controls="panel-alergias" data-tab="alergias">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    Alergias
+                </button>
+                <button role="tab" id="tab-notificacoes" class="config-tab-btn" aria-selected="false" aria-controls="panel-notificacoes" data-tab="notificacoes">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    Notificações
+                </button>
+                <button role="tab" id="tab-seguranca" class="config-tab-btn" aria-selected="false" aria-controls="panel-seguranca" data-tab="seguranca">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Segurança
+                </button>
+            </div>
+
+            <!-- Painel Perfil -->
+            <div role="tabpanel" id="panel-perfil" aria-labelledby="tab-perfil" class="config-tab-panel active">
+                <section class="config-section" aria-labelledby="perfil-title">
+                    <header class="config-section-header">
+                        <h2 id="perfil-title">Dados Pessoais</h2>
+                    </header>
+                    <form id="formPerfil" class="config-form" novalidate>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="perfilNome" class="form-label">Nome Completo <span class="required" aria-hidden="true">*</span></label>
+                                <input type="text" id="perfilNome" name="nome" class="form-input" required autocomplete="name">
+                            </div>
+                            <div class="form-group">
+                                <label for="perfilEmail" class="form-label">Email <span class="required" aria-hidden="true">*</span></label>
+                                <input type="email" id="perfilEmail" name="email" class="form-input" required autocomplete="email">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="perfilTelefone" class="form-label">Telefone</label>
+                                <input type="tel" id="perfilTelefone" name="telefone" class="form-input" autocomplete="tel">
+                            </div>
+                            <div class="form-group">
+                                <label for="perfilRole" class="form-label">Perfil</label>
+                                <input type="text" id="perfilRole" class="form-input" readonly aria-describedby="roleHelp">
+                                <small id="roleHelp" class="form-help">Definido pelo administrador do sistema</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="perfilTurma" class="form-label">Turma</label>
+                            <select id="perfilTurma" name="turma_id" class="form-select">
+                                <option value="">Não vinculado a nenhuma turma</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary" id="btnSalvarPerfil">
+                                <span class="btn-text">Salvar Alterações</span>
+                                <span class="btn-loading" hidden>
+                                    <span class="loading-spinner-sm" aria-hidden="true"></span>
+                                    Salvando...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="config-section config-section-danger" aria-labelledby="conta-title">
+                    <header class="config-section-header">
+                        <h2 id="conta-title">Excluir Conta</h2>
+                    </header>
+                    <div class="config-danger-content">
+                        <p>Esta ação é irreversível. Todos os seus dados, reservas e histórico serão permanentemente removidos.</p>
+                        <button type="button" class="btn-danger" id="btnExcluirConta">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Excluir Minha Conta
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Painel Preferências -->
+            <div role="tabpanel" id="panel-preferencias" aria-labelledby="tab-preferencias" class="config-tab-panel" hidden>
+                <section class="config-section" aria-labelledby="prefs-ui-title">
+                    <header class="config-section-header">
+                        <h2 id="prefs-ui-title">Interface</h2>
+                    </header>
+                    <div class="config-options">
+                        <div class="config-option">
+                            <div class="config-option-info">
+                                <h3>Tema</h3>
+                                <p>Escolha a aparência da interface</p>
+                            </div>
+                            <div class="theme-selector" role="radiogroup" aria-label="Seleção de tema">
+                                <label class="theme-option">
+                                    <input type="radio" name="theme" value="light" data-pref="theme">
+                                    <div class="theme-preview theme-light" aria-hidden="true"></div>
+                                    <span>Claro</span>
+                                </label>
+                                <label class="theme-option">
+                                    <input type="radio" name="theme" value="dark" data-pref="theme">
+                                    <div class="theme-preview theme-dark" aria-hidden="true"></div>
+                                    <span>Escuro</span>
+                                </label>
+                                <label class="theme-option">
+                                    <input type="radio" name="theme" value="system" data-pref="theme">
+                                    <div class="theme-preview theme-system" aria-hidden="true"></div>
+                                    <span>Sistema</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="config-option">
+                            <div class="config-option-info">
+                                <h3>Densidade da Interface</h3>
+                                <p>Ajuste o espaçamento dos elementos</p>
+                            </div>
+                            <select id="prefDensidade" class="form-select" style="max-width: 200px;" data-pref="density">
+                                <option value="comfortable">Confortável</option>
+                                <option value="compact">Compacta</option>
+                                <option value="spacious">Espaçosa</option>
+                            </select>
+                        </div>
+
+                        <div class="config-option">
+                            <div class="config-option-info">
+                                <h3>Idioma</h3>
+                                <p>Idioma da interface</p>
+                            </div>
+                            <select id="prefIdioma" class="form-select" style="max-width: 200px;" data-pref="language">
+                                <option value="pt-BR">Português (Brasil)</option>
+                                <option value="en-US">English (US)</option>
+                                <option value="es-ES">Español</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="config-section" aria-labelledby="prefs-cardapio-title">
+                    <header class="config-section-header">
+                        <h2 id="prefs-cardapio-title">Cardápio</h2>
+                    </header>
+                    <div class="config-options">
+                        <div class="config-option">
+                            <div class="config-option-info">
+                                <h3>Visualização Padrão</h3>
+                                <p>Como o cardápio é exibido ao abrir</p>
+                            </div>
+                            <select id="prefCardapioView" class="form-select" style="max-width: 200px;" data-pref="cardapio_view">
+                                <option value="semanal">Semanal (Grade)</option>
+                                <option value="lista">Lista por Dia</option>
+                                <option value="hoje">Apenas Hoje</option>
+                            </select>
+                        </div>
+
+                        <div class="config-option toggle-option">
+                            <div class="config-option-info">
+                                <h3>Mostrar Alergênicos</h3>
+                                <p>Exibir badges de alergênicos nos itens do cardápio</p>
+                            </div>
+                            <label class="toggle-switch" data-pref="show_allergens">
+                                <input type="checkbox" id="prefShowAlergenos" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="config-option toggle-option">
+                            <div class="config-option-info">
+                                <h3>Destacar Restrições</h3>
+                                <p>Destacar itens que contenham seus alergênicos</p>
+                            </div>
+                            <label class="toggle-switch" data-pref="highlight_restrictions">
+                                <input type="checkbox" id="prefHighlightRestricoes" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Painel Alergias -->
+            <div role="tabpanel" id="panel-alergias" aria-labelledby="tab-alergias" class="config-tab-panel" hidden>
+                <section class="config-section" aria-labelledby="alergias-title">
+                    <header class="config-section-header">
+                        <div class="section-title-group">
+                            <h2 id="alergias-title">Minhas Alergias e Restrições</h2>
+                        </div>
+                    </header>
+                    <p class="config-section-desc">Selecione os alergênicos que você possui. Estes serão usados para alertar sobre itens do cardápio.</p>
+
+                    <div class="alergenos-grid" id="alergenosGrid">
+                        <!-- Carregado via JS -->
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-primary" id="btnSalvarAlergias">
+                            <span class="btn-text">Salvar Alergias</span>
+                            <span class="btn-loading" hidden>
+                                <span class="loading-spinner-sm" aria-hidden="true"></span>
+                                Salvando...
+                            </span>
+                        </button>
+                    </div>
+                </section>
+
+                <section class="config-section" aria-labelledby="alergias-info-title">
+                    <header class="config-section-header">
+                        <h2 id="alergias-info-title">Como Funciona</h2>
+                    </header>
+                    <div class="info-cards">
+                        <article class="info-card">
+                            <div class="info-card-icon blue">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                            </div>
+                            <h3>Alertas Automáticos</h3>
+                            <p>Itens do cardápio que contêm seus alergênicos serão marcados com um badge de alerta.</p>
+                        </article>
+                        <article class="info-card">
+                            <div class="info-card-icon green">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <h3>Filtro Inteligente</h3>
+                            <p>Ative "Destacar Restrições" para aplicar um filtro visual nos itens incompatíveis.</p>
+                        </article>
+                        <article class="info-card">
+                            <div class="info-card-icon amber">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </div>
+                            <h3>Privacidade</h3>
+                            <p>Suas alergias são visíveis apenas para você e para a equipe da cozinha ao fazer reservas.</p>
+                        </article>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Painel Notificações -->
+            <div role="tabpanel" id="panel-notificacoes" aria-labelledby="tab-notificacoes" class="config-tab-panel" hidden>
+                <section class="config-section" aria-labelledby="notifs-title">
+                    <header class="config-section-header">
+                        <h2 id="notifs-title">Preferências de Notificação</h2>
+                    </header>
+                    <div class="config-options">
+                        <div class="config-option toggle-option">
+                            <div class="config-option-info">
+                                <h3>Notificações Push</h3>
+                                <p>Receber notificações no navegador</p>
+                            </div>
+                            <label class="toggle-switch" data-pref="push_enabled">
+                                <input type="checkbox" id="prefPush" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="config-option toggle-option">
+                            <div class="config-option-info">
+                                <h3>Lembrete de Reservas</h3>
+                                <p>Avisar 1 hora antes da refeição reservada</p>
+                            </div>
+                            <label class="toggle-switch" data-pref="reminder_enabled">
+                                <input type="checkbox" id="prefReminder" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="config-option toggle-option">
+                            <div class="config-option-info">
+                                <h3>Alerta de Alergênicos</h3>
+                                <p>Notificar quando reservar item com alergênico</p>
+                            </div>
+                            <label class="toggle-switch" data-pref="allergy_alert_enabled">
+                                <input type="checkbox" id="prefAllergyAlert" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="config-option toggle-option">
+                            <div class="config-option-info">
+                                <h3>Resumo Semanal</h3>
+                                <p>Receber resumo das reservas da semana por email</p>
+                            </div>
+                            <label class="toggle-switch" data-pref="weekly_summary_enabled">
+                                <input type="checkbox" id="prefWeeklySummary">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Painel Segurança -->
+            <div role="tabpanel" id="panel-seguranca" aria-labelledby="tab-seguranca" class="config-tab-panel" hidden>
+                <section class="config-section" aria-labelledby="seg-alterar-senha-title">
+                    <header class="config-section-header">
+                        <h2 id="seg-alterar-senha-title">Alterar Senha</h2>
+                    </header>
+                    <form id="formSenha" class="config-form" novalidate>
+                        <div class="form-group">
+                            <label for="senhaAtual" class="form-label">Senha Atual <span class="required" aria-hidden="true">*</span></label>
+                            <input type="password" id="senhaAtual" name="senha_atual" class="form-input" required autocomplete="current-password">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="novaSenha" class="form-label">Nova Senha <span class="required" aria-hidden="true">*</span></label>
+                                <input type="password" id="novaSenha" name="nova_senha" class="form-input" required autocomplete="new-password" minlength="8">
+                                <small class="form-help">Mínimo 8 caracteres</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmarSenha" class="form-label">Confirmar Nova Senha <span class="required" aria-hidden="true">*</span></label>
+                                <input type="password" id="confirmarSenha" name="confirmar_senha" class="form-input" required autocomplete="new-password">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary" id="btnAlterarSenha">
+                                <span class="btn-text">Alterar Senha</span>
+                                <span class="btn-loading" hidden>
+                                    <span class="loading-spinner-sm" aria-hidden="true"></span>
+                                    Alterando...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="config-section" aria-labelledby="seg-sessoes-title">
+                    <header class="config-section-header">
+                        <h2 id="seg-sessoes-title">Sessões Ativas</h2>
+                    </header>
+                    <div class="table-responsive">
+                        <table class="data-table" id="sessoes-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Dispositivo</th>
+                                    <th scope="col">Localização</th>
+                                    <th scope="col">Última Atividade</th>
+                                    <th scope="col">Atual</th>
+                                    <th scope="col">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessoes-tbody">
+                                <tr>
+                                    <td colspan="5" class="table-loading">Carregando sessões...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="config-section config-section-danger" aria-labelledby="seg-revogar-title">
+                    <header class="config-section-header">
+                        <h2 id="seg-revogar-title">Revogar Todas as Sessões</h2>
+                    </header>
+                    <div class="config-danger-content">
+                        <p>Isso fará logout em todos os dispositivos, exceto o atual. Você precisará fazer login novamente.</p>
+                        <button type="button" class="btn-danger" id="btnRevogarSessoes">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Revogar Outras Sessões
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Confirmar Exclusão Conta -->
+    <div class="modal-overlay" id="modalExcluirConta" hidden role="dialog" aria-modal="true" aria-labelledby="modalExcluirTitle">
+        <div class="modal-box">
+            <header class="modal-header">
+                <h3 id="modalExcluirTitle" class="modal-title">Confirmar Exclusão da Conta</h3>
+                <button class="modal-close" id="modalExcluirClose" aria-label="Fechar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p><strong>ATENÇÃO:</strong> Esta ação é <strong>irreversível</strong>. Ao confirmar:</p>
+                <ul>
+                    <li>Sua conta será permanentemente excluída</li>
+                    <li>Todas as suas reservas e histórico serão removidos</li>
+                    <li>Suas preferências e alergias serão apagadas</li>
+                    <li>Você não poderá recuperar seus dados</li>
+                </ul>
+                <p>Digite <strong>"EXCLUIR"</strong> para confirmar:</p>
+                <input type="text" id="confirmExcluirInput" class="form-input" placeholder="Digite EXCLUIR para confirmar" autocomplete="off">
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn-secondary" id="btnCancelarExcluir">Cancelar</button>
+                <button type="button" class="btn-danger" id="btnConfirmarExcluir" disabled>
+                    Excluir Minha Conta
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Revogar Sessões -->
+    <div class="modal-overlay" id="modalRevogarSessoes" hidden role="dialog" aria-modal="true" aria-labelledby="modalRevogarTitle">
+        <div class="modal-box">
+            <header class="modal-header">
+                <h3 id="modalRevogarTitle" class="modal-title">Revogar Outras Sessões</h3>
+                <button class="modal-close" id="modalRevogarClose" aria-label="Fechar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p>Tem certeza que deseja fazer logout em todos os outros dispositivos? Você permanecerá logado neste dispositivo.</p>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn-secondary" id="btnCancelarRevogar">Cancelar</button>
+                <button type="button" class="btn-danger" id="btnConfirmarRevogar">Sim, Revogar</button>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Estado
+        let currentTab = 'perfil';
+        let userData = null;
+        let alergenosDisponiveis = [];
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['aluno', 'professor', 'adm']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) logoutBtn.addEventListener('click', () => Auth.logout());
+
+            // Configurar abas
+            inicializarTabs();
+
+            // Configurar formulários
+            inicializarFormularios();
+
+            // Configurar modais
+            inicializarModais();
+
+            // Configurar toggles de preferências
+            inicializarPreferencias();
+
+            // Carregar dados do usuário
+            await carregarDadosUsuario();
+
+            // Carregar alergênicos disponíveis
+            await carregarAlergenosDisponiveis();
+
+            // Carregar sessões ativas
+            await carregarSessoesAtivas();
+
+            // Inicializar sidebar mobile
+            inicializarSidebarMobile();
+
+            // Verificar tab na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab && document.querySelector(`[data-tab="${tab}"]`)) {
+                trocarTab(tab);
+            }
+        });
+
+        // Tabs
+        function inicializarTabs() {
+            const tabs = document.getElementById('configTabs');
+            if (!tabs) return;
+
+            tabs.querySelectorAll('.config-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => trocarTab(btn.dataset.tab));
+            });
+
+            // Navegação por teclado
+            tabs.addEventListener('keydown', (e) => {
+                const btns = Array.from(tabs.querySelectorAll('.config-tab-btn'));
+                const activeIndex = btns.findIndex(b => b === document.activeElement);
+                let newIndex = activeIndex;
+
+                if (e.key === 'ArrowRight') newIndex = (activeIndex + 1) % btns.length;
+                if (e.key === 'ArrowLeft') newIndex = (activeIndex - 1 + btns.length) % btns.length;
+                if (e.key === 'Home') newIndex = 0;
+                if (e.key === 'End') newIndex = btns.length - 1;
+
+                if (newIndex !== activeIndex) {
+                    e.preventDefault();
+                    btns[newIndex].focus();
+                    btns[newIndex].click();
+                }
+            });
+        }
+
+        function trocarTab(tab) {
+            currentTab = tab;
+
+            // Atualizar botões
+            document.querySelectorAll('.config-tab-btn').forEach(btn => {
+                const isActive = btn.dataset.tab === tab;
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-selected', isActive);
+            });
+
+            // Atualizar painéis
+            document.querySelectorAll('.config-tab-panel').forEach(panel => {
+                const isActive = panel.id === `panel-${tab}`;
+                panel.hidden = !isActive;
+                panel.classList.toggle('active', isActive);
+            });
+
+            // Atualizar URL sem recarregar
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tab);
+            window.history.replaceState({}, '', url);
+        }
+
+        // Formulários
+        function inicializarFormularios() {
+            // Form Perfil
+            const formPerfil = document.getElementById('formPerfil');
+            if (formPerfil) {
+                formPerfil.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await salvarPerfil(new FormData(formPerfil));
+                });
+            }
+
+            // Form Senha
+            const formSenha = document.getElementById('formSenha');
+            if (formSenha) {
+                formSenha.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(formSenha);
+                    if (formData.get('nova_senha') !== formData.get('confirmar_senha')) {
+                        alert('As senhas não coincidem');
+                        return;
+                    }
+                    await alterarSenha(formData);
+                });
+            }
+
+            // Form Alergias
+            const btnSalvarAlergias = document.getElementById('btnSalvarAlergias');
+            if (btnSalvarAlergias) {
+                btnSalvarAlergias.addEventListener('click', salvarAlergias);
+            }
+        }
+
+        // Preferências (toggles)
+        function inicializarPreferencias() {
+            // Tema
+            document.querySelectorAll('input[name="theme"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        GlobalPreferences.set('theme', e.target.value);
+                    }
+                });
+            });
+
+            // Selects de preferências
+            ['prefDensidade', 'prefIdioma', 'prefCardapioView'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('change', () => {
+                        GlobalPreferences.set(el.dataset.pref, el.value);
+                    });
+                }
+            });
+
+            // Toggles
+            document.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    GlobalPreferences.set(checkbox.closest('.toggle-switch').dataset.pref, checkbox.checked);
+                });
+            });
+        }
+
+        // Modais
+        function inicializarModais() {
+            // Modal Excluir Conta
+            const modalExcluir = document.getElementById('modalExcluirConta');
+            const btnExcluirConta = document.getElementById('btnExcluirConta');
+            const btnCancelarExcluir = document.getElementById('btnCancelarExcluir');
+            const btnConfirmarExcluir = document.getElementById('btnConfirmarExcluir');
+            const confirmInput = document.getElementById('confirmExcluirInput');
+            const modalExcluirClose = document.getElementById('modalExcluirClose');
+
+            btnExcluirConta?.addEventListener('click', () => {
+                modalExcluir.hidden = false;
+                confirmInput.value = '';
+                btnConfirmarExcluir.disabled = true;
+                confirmInput.focus();
+            });
+
+            const fecharModalExcluir = () => {
+                modalExcluir.hidden = true;
+            };
+
+            btnCancelarExcluir?.addEventListener('click', fecharModalExcluir);
+            modalExcluirClose?.addEventListener('click', fecharModalExcluir);
+            modalExcluir?.addEventListener('click', (e) => {
+                if (e.target === modalExcluir) fecharModalExcluir();
+            });
+
+            confirmInput?.addEventListener('input', () => {
+                btnConfirmarExcluir.disabled = confirmInput.value !== 'EXCLUIR';
+            });
+
+            btnConfirmarExcluir?.addEventListener('click', async () => {
+                await excluirConta();
+                fecharModalExcluir();
+            });
+
+            // Modal Revogar Sessões
+            const modalRevogar = document.getElementById('modalRevogarSessoes');
+            const btnRevogarSessoes = document.getElementById('btnRevogarSessoes');
+            const btnCancelarRevogar = document.getElementById('btnCancelarRevogar');
+            const btnConfirmarRevogar = document.getElementById('btnConfirmarRevogar');
+            const modalRevogarClose = document.getElementById('modalRevogarClose');
+
+            btnRevogarSessoes?.addEventListener('click', () => {
+                modalRevogar.hidden = false;
+            });
+
+            const fecharModalRevogar = () => {
+                modalRevogar.hidden = true;
+            };
+
+            btnCancelarRevogar?.addEventListener('click', fecharModalRevogar);
+            btnConfirmarRevogar?.addEventListener('click', async () => {
+                await revogarSessoes();
+                fecharModalRevogar();
+            });
+            modalRevogarClose?.addEventListener('click', fecharModalRevogar);
+            modalRevogar?.addEventListener('click', (e) => {
+                if (e.target === modalRevogar) fecharModalRevogar();
+            });
+
+            // Fechar com ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (!modalExcluir.hidden) fecharModalExcluir();
+                    if (!modalRevogar.hidden) fecharModalRevogar();
+                }
+            });
+        }
+
+        // Carregar dados do usuário
+        async function carregarDadosUsuario() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/perfil');
+                if (!res.ok) throw new Error('Erro ao carregar perfil');
+
+                const data = await res.json();
+                if (data.sucesso && data.usuario) {
+                    userData = data.usuario;
+                    preencherFormularioPerfil(data.usuario);
+                    atualizarAvatar(data.usuario);
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao carregar perfil:', err);
+            }
+        }
+
+        function preencherFormularioPerfil(usuario) {
+            document.getElementById('perfilNome').value = usuario.nome || '';
+            document.getElementById('perfilEmail').value = usuario.email || '';
+            document.getElementById('perfilTelefone').value = usuario.telefone || '';
+            document.getElementById('perfilRole').value = formatRole(usuario.role);
+
+            // Preencher turmas
+            await carregarTurmasSelect(usuario.turma_id);
+
+            // Preencher alergias do usuário
+            if (usuario.alergias && usuario.alergias.length > 0) {
+                usuario.alergias.forEach(alergia => {
+                    const checkbox = document.querySelector(`#alergenosGrid input[value="${alergia}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+        }
+
+        async function carregarTurmasSelect(selectedId) {
+            try {
+                const res = await Auth.apiCall('/api/usuario/turmas');
+                if (!res.ok) throw new Error('Erro ao carregar turmas');
+
+                const data = await res.json();
+                const select = document.getElementById('perfilTurma');
+                if (data.sucesso && data.turmas) {
+                    select.innerHTML = '<option value="">Não vinculado a nenhuma turma</option>' +
+                        data.turmas.map(t => `<option value="${escapeHtml(t.id)}" ${t.id === selectedId ? 'selected' : ''}>${escapeHtml(t.nome)}</option>`).join('');
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao carregar turmas:', err);
+            }
+        }
+
+        function atualizarAvatar(usuario) {
+            const avatar = document.getElementById('userAvatar');
+            const nameEl = document.getElementById('userName');
+            const sidebarName = document.getElementById('sidebarUserName');
+
+            if (avatar) {
+                avatar.textContent = (usuario.nome || 'U')[0].toUpperCase();
+            }
+            if (nameEl) {
+                nameEl.textContent = usuario.nome || 'Usuário';
+            }
+            if (sidebarName) {
+                sidebarName.textContent = usuario.nome ? `Olá, ${usuario.nome.split(' ')[0]}!` : 'Olá, Usuário!';
+            }
+        }
+
+        async function salvarPerfil(formData) {
+            const btn = document.getElementById('btnSalvarPerfil');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+
+            btn.disabled = true;
+            btnText.hidden = true;
+            btnLoading.hidden = false;
+
+            try {
+                const res = await Auth.apiCall('/api/usuario/perfil', {
+                    method: 'PUT',
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+
+                const data = await res.json();
+
+                if (data.sucesso) {
+                    alert('Perfil atualizado com sucesso!');
+                    if (data.usuario) {
+                        atualizarAvatar(data.usuario);
+                    }
+                } else {
+                    alert(data.mensagem || 'Erro ao atualizar perfil');
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao salvar perfil:', err);
+                alert('Erro ao salvar perfil. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btnText.hidden = false;
+                btnLoading.hidden = true;
+            }
+        }
+
+        async function alterarSenha(formData) {
+            const btn = document.getElementById('btnAlterarSenha');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+
+            btn.disabled = true;
+            btnText.hidden = true;
+            btnLoading.hidden = false;
+
+            try {
+                const res = await Auth.apiCall('/api/usuario/senha', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        senha_atual: formData.get('senha_atual'),
+                        nova_senha: formData.get('nova_senha')
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.sucesso) {
+                    alert('Senha alterada com sucesso!');
+                    formSenha.reset();
+                } else {
+                    alert(data.mensagem || 'Erro ao alterar senha');
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao alterar senha:', err);
+                alert('Erro ao alterar senha. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btnText.hidden = false;
+                btnLoading.hidden = true;
+            }
+        }
+
+        // Alergias
+        async function carregarAlergenosDisponiveis() {
+            try {
+                const res = await Auth.apiCall('/api/alergenos');
+                if (!res.ok) throw new Error('Erro ao carregar alergênicos');
+
+                const data = await res.json();
+                if (data.sucesso && data.alergenos) {
+                    alergenosDisponiveis = data.alergenos;
+                    renderizarAlergenosGrid();
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao carregar alergênicos:', err);
+            }
+        }
+
+        function renderizarAlergenosGrid() {
+            const grid = document.getElementById('alergenosGrid');
+            if (!grid) return;
+
+            // Agrupar por categoria
+            const categorias = {};
+            alergenosDisponiveis.forEach(a => {
+                if (!categorias[a.categoria]) categorias[a.categoria] = [];
+                categorias[a.categoria].push(a);
+            });
+
+            grid.innerHTML = Object.entries(categorias).map(([categoria, alergenos]) => `
+                <div class="alergenos-categoria">
+                    <h4 class="alergenos-categoria-titulo">${escapeHtml(categoria)}</h4>
+                    <div class="alergenos-lista">
+                        ${alergenos.map(a => `
+                            <label class="alergeno-item">
+                                <input type="checkbox" value="${escapeHtml(a.nome)}" data-id="${a.id}">
+                                <span class="alergeno-nome">${escapeHtml(a.nome)}</span>
+                                ${a.descricao ? `<span class="alergeno-desc">${escapeHtml(a.descricao)}</span>` : ''}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function salvarAlergias() {
+            const btn = document.getElementById('btnSalvarAlergias');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+
+            const selecionados = Array.from(document.querySelectorAll('#alergenosGrid input:checked'))
+                .map(cb => cb.value);
+
+            btn.disabled = true;
+            btnText.hidden = true;
+            btnLoading.hidden = false;
+
+            try {
+                const res = await Auth.apiCall('/api/usuario/alergias', {
+                    method: 'PUT',
+                    body: JSON.stringify({ alergias: selecionados })
+                });
+
+                const data = await res.json();
+
+                if (data.sucesso) {
+                    alert('Alergias salvas com sucesso!');
+                } else {
+                    alert(data.mensagem || 'Erro ao salvar alergias');
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao salvar alergias:', err);
+                alert('Erro ao salvar alergias. Tente novamente.');
+            } finally {
+                btn.disabled = false;
+                btnText.hidden = false;
+                btnLoading.hidden = true;
+            }
+        }
+
+        // Sessões
+        async function carregarSessoesAtivas() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/sessoes');
+                if (!res.ok) throw new Error('Erro ao carregar sessões');
+
+                const data = await res.json();
+                const tbody = document.getElementById('sessoes-tbody');
+
+                if (data.sucesso && data.sessoes && data.sessoes.length > 0) {
+                    tbody.innerHTML = data.sessoes.map(s => `
+                        <tr>
+                            <td>${escapeHtml(s.dispositivo || 'Desconhecido')}</td>
+                            <td>${escapeHtml(s.localizacao || 'Desconhecida')}</td>
+                            <td>${formatDateTime(s.ultima_atividade)}</td>
+                            <td>
+                                ${s.atual ? '<span class="badge badge-green">Atual</span>' : ''}
+                            </td>
+                            <td>
+                                ${!s.atual ? `
+                                    <button class="btn-danger btn-sm" onclick="revogarSessao('${s.id}')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        Revogar
+                                    </button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="table-empty">Nenhuma sessão ativa</td></tr>';
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao carregar sessões:', err);
+                document.getElementById('sessoes-tbody').innerHTML =
+                    '<tr><td colspan="5" class="table-empty">Erro ao carregar sessões</td></tr>';
+            }
+        }
+
+        async function revogarSessao(id) {
+            if (!confirm('Tem certeza que deseja revogar esta sessão?')) return;
+
+            try {
+                const res = await Auth.apiCall(`/api/usuario/sessoes/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await res.json();
+                if (data.sucesso) {
+                    alert('Sessão revogada com sucesso!');
+                    carregarSessoesAtivas();
+                } else {
+                    alert(data.mensagem || 'Erro ao revogar sessão');
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao revogar sessão:', err);
+                alert('Erro ao revogar sessão');
+            }
+        }
+
+        async function revogarSessoes() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/sessoes/revogar-todas', {
+                    method: 'POST'
+                });
+
+                const data = await res.json();
+                if (data.sucesso) {
+                    alert('Todas as outras sessões foram revogadas!');
+                    carregarSessoesAtivas();
+                } else {
+                    alert(data.mensagem || 'Erro ao revogar sessões');
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao revogar sessões:', err);
+                alert('Erro ao revogar sessões');
+            }
+        }
+
+        async function excluirConta() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/conta', {
+                    method: 'DELETE'
+                });
+
+                const data = await res.json();
+                if (data.sucesso) {
+                    alert('Conta excluída com sucesso!');
+                    Auth.logout();
+                } else {
+                    alert(data.mensagem || 'Erro ao excluir conta');
+                }
+            } catch (err) {
+                console.error('[Config] Erro ao excluir conta:', err);
+                alert('Erro ao excluir conta');
+            }
+        }
+
+        // Utilitários
+        function formatRole(role) {
+            const labels = {
+                'aluno': 'Aluno',
+                'professor': 'Professor',
+                'adm': 'Administrador'
+            };
+            return labels[role] || role;
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '—';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            } catch {
+                return dateStr;
+            }
+        }
+
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '"')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Sidebar Mobile
+        function inicializarSidebarMobile() {
+            const hamburger = document.getElementById('hamburgerBtn');
+            const overlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('sidebar');
+
+            if (hamburger) {
+                hamburger.addEventListener('click', toggleSidebar);
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', closeSidebar);
+            }
+
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+
+            if (sidebar && overlay && hamburger) {
+                const isOpen = sidebar.classList.toggle('open');
+                overlay.hidden = !isOpen;
+                hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.hidden = true;
+            if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
+        }
+    </script>
+</body>
+</html>

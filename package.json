@@ -1,16 +1,45 @@
 {
-  "name": "amaralhub",
+  "name": "GOSchool",
   "version": "1.0.0",
-  "description": "Backend",
-  "main": "server.js",
+  "description": "GOSchool - Plataforma de Gestão Escolar (Microsserviços)",
+  "private": true,
+  "workspaces": [
+    "gateway",
+    "auth-service",
+    "reservas-service",
+    "shared"
+  ],
   "scripts": {
-    "start": "node server.js"
+    "dev": "concurrently \"npm run dev --workspace=gateway\" \"npm run dev --workspace=auth-service\" \"npm run dev --workspace=reservas-service\"",
+    "dev:gateway": "npm run dev --workspace=gateway",
+    "dev:auth": "npm run dev --workspace=auth-service",
+    "dev:reservas": "npm run dev --workspace=reservas-service",
+    "build": "npm run build --workspaces",
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "db:setup": "docker-compose up -d mysql mongo && sleep 10 && docker-compose exec -T mysql mysql -u root -prootpassword banco_goschool < database/mysql/schema.sql && docker-compose exec -T mongo mongosh banco_goschool database/mongo/indexes.js",
+    "db:seed": "docker-compose exec -T mysql mysql -u root -prootpassword banco_goschool < database/mysql/seeds/demo-data.sql && docker-compose exec -T mongo mongosh banco_goschool database/mongo/seeds/demo-data.js",
+    "test": "npx jest --projects gateway auth-service reservas-service shared",
+    "test:e2e": "playwright test",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --write .",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "clean": "rm -rf node_modules gateway/node_modules auth-service/node_modules reservas-service/node_modules shared/node_modules"
   },
-  "dependencies": {
-    "dotenv": "^18.0.1",
-    "express": "^4.19.2",
-    "mongodb": "^7.6.0",
-    "mysql2": "^3.24.4",
-    "nodemailer": "^10.0.10"
-  }
+  "devDependencies": {
+    "@babel/core": "^8.1.0",
+    "@babel/preset-env": "^8.0.7",
+    "babel-jest": "^30.5.2",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "npm@10.2.0"
 }

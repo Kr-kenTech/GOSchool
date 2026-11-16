@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoSchool - Painel Administrativo</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Admin/adm.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GoSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="/adm/" class="menu-item active">Início / Gestão</a>
+            <a href="/Cardapio/cardapio.html" class="menu-item">Cardápio e Ingredientes</a>
+            <a href="/Reservas/" class="menu-item">Painel de Reservas</a>
+            <a href="#" class="menu-item">Usuários</a>
+            <a href="/Configuracoes/config.html" class="menu-item">Configurações do Sistema</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon">🛠️</div>
+                <span data-auth-user="name">Olá, Administrador!</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL DO ADMINISTRADOR -->
+    <main class="conteudo-principal">
+        <div class="main-wrapper">
+            <header id="introducao">
+                <div>
+                    <h1>Painel Administrativo</h1>
+                    <p>Controle total do sistema GoSchool</p>
+                </div>
+                <button class="notificacao" aria-label="Notificações">🔔</button>
+            </header>
+
+            <section id="conteiner">
+                <div class="cardapio-header">
+                    <div class="titulo-cardapio">
+                        <span class="icone-cardapio">⚙️</span>
+                        <h2>Gerenciamento Geral</h2>
+                    </div>
+                </div>
+
+                <!-- Estatísticas do sistema (dados reais via API) -->
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">📋</div>
+                        <div class="stat-info">
+                            <h2 id="stat-reservas">-</h2>
+                            <span class="stat-label">Reservas no Sistema</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">🍽️</div>
+                        <div class="stat-info">
+                            <h2 id="stat-cardapio">-</h2>
+                            <span class="stat-label">Itens no Cardápio</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">♻️</div>
+                        <div class="stat-info">
+                            <h2 id="stat-desperdicio">-</h2>
+                            <span class="stat-label">Taxa de Desperdício (%)</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple">📊</div>
+                        <div class="stat-info">
+                            <h2 id="stat-periodo">-</h2>
+                            <span class="stat-label">Última Atualização</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de reservas (todas as reservas, visível ao admin) -->
+                <div class="table-container-card">
+                    <div class="table-toolbar">
+                        <div class="filter-group">
+                            <span>Reservas Recentes</span>
+                        </div>
+                        <div class="action-buttons">
+                            <a href="/Reservas/" class="btn btn-primary">Gerenciar Reservas</a>
+                        </div>
+                    </div>
+                    <div id="reservas-loading" style="padding:1rem;color:#64748b;">Carregando reservas...</div>
+                    <div id="reservas-error" style="padding:1rem;color:#c62828;display:none;">Erro ao carregar reservas.</div>
+                    <div class="table-responsive">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Professor</th>
+                                    <th>Data</th>
+                                    <th>Horário</th>
+                                    <th>Descrição</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservas-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Inicialização da autenticação - apenas para perfil administrador
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inicializar auth - requer role 'adm'
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['adm']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout (agora encerra sessão no backend via /api/logout)
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            await carregarEstatisticas();
+            await carregarReservas();
+        });
+
+        async function carregarEstatisticas() {
+            try {
+                // Reservas totais
+                const resReservas = await Auth.apiCall('/api/reservas');
+                let totalReservas = 0;
+                if (resReservas.ok) {
+                    const d = await resReservas.json();
+                    totalReservas = d.reservas ? d.reservas.length : 0;
+                }
+                document.getElementById('stat-reservas').textContent = totalReservas;
+
+                // Cardápio itens (semanal, agrupado por dia)
+                const resCardapio = await Auth.apiCall('/api/cardapio/semana');
+                let totalCardapio = 0;
+                if (resCardapio.ok) {
+                    const d = await resCardapio.json();
+                    const cardapio = d.cardapio || {};
+                    totalCardapio = Object.values(cardapio).reduce(
+                        (acc, dia) => acc + (Array.isArray(dia) ? dia.length : 0),
+                        0
+                    );
+                }
+                document.getElementById('stat-cardapio').textContent = totalCardapio;
+
+                // Desperdício (somente admin)
+                const resDesp = await Auth.apiCall('/api/desperdicio/dashboard');
+                if (resDesp.ok) {
+                    const d = await resDesp.json();
+                    document.getElementById('stat-desperdicio').textContent = d.kpis?.taxaDesperdicio ?? '-';
+                    document.getElementById('stat-periodo').textContent = new Date().toLocaleDateString('pt-BR');
+                }
+            } catch (err) {
+                console.error('[Admin] Erro ao carregar estatísticas:', err);
+            }
+        }
+
+        function formatarData(dataStr) {
+            if (!dataStr) return '-';
+            const parts = String(dataStr).split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dataStr;
+        }
+
+        async function carregarReservas() {
+            const loading = document.getElementById('reservas-loading');
+            const errorEl = document.getElementById('reservas-error');
+            const tbody = document.getElementById('reservas-table-body');
+            try {
+                const res = await Auth.apiCall('/api/reservas');
+                if (!res.ok) throw new Error('Erro ao buscar reservas');
+
+                const data = await res.json();
+                const reservas = data.reservas || [];
+
+                loading.style.display = 'none';
+
+                if (reservas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;">Nenhuma reserva cadastrada.</td></tr>';
+                    return;
+                }
+
+                // Exibir as 10 mais recentes
+                const recentes = [...reservas].reverse().slice(0, 10);
+                tbody.innerHTML = recentes.map(r => `
+                    <tr>
+                        <td>${escapeHtml(r.categoria || '-')}</td>
+                        <td>${escapeHtml(r.professor || '-')}</td>
+                        <td>${formatarData(r.data)}</td>
+                        <td>${escapeHtml(r.horario || '-')}</td>
+                        <td>${escapeHtml(r.descricao || '-')}</td>
+                        <td><span class="status-indicator active">Ativa</span></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                loading.style.display = 'none';
+                errorEl.style.display = 'block';
+                console.error('[Admin] Erro ao carregar reservas:', err);
+            }
+        }
+
+        function escapeHtml(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+
+</html>

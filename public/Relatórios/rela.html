@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios de Desperdício</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Relatórios/rela.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+
+<body>
+
+    <!-- Menu Lateral (Sidebar) -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GoSchool">
+        </div>
+        <nav class="menu">
+            <a href="/Inicio/inicio.html" class="menu-item">Início</a>
+            <a href="/Desperdício/visaoGeral.html" class="menu-item">Visão Geral</a>
+            <a href="/Cardapio/cardapio.html" class="menu-item">Cardápio e Ingredientes</a>
+            <a href="/Admin/adm.html" class="menu-item">Gestão de Usuários</a>
+            <a href="#" class="menu-item active">Relatório</a>
+            <a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon">👤</div>
+                <span data-auth-user="name">Admin</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main>
+        <div class="main-wrapper">
+
+            <!-- Cabeçalho -->
+            <header class="page-header">
+                <div>
+                    <h1>Relatórios de Desperdício</h1>
+                    <p>Acompanhe os indicadores de desperdício de alimentos.</p>
+                </div>
+                <div class="header-controls">
+                    <div class="period-selector">
+                        <button class="btn-period">Hoje</button>
+                        <button class="btn-period active">Semana</button>
+                        <button class="btn-period">Mês</button>
+                        <button class="btn-period">Ano</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Grid 1: Indicadores (KPIs) - 4 Cards em linha -->
+            <section class="stats-grid">
+                <div class="card-box kpi-card">
+                    <div class="kpi-icon">🗑️</div>
+                    <div class="kpi-data">
+                        <h3>-- kg</h3>
+                        <p>Desperdício total</p>
+                        <span class="badge">--</span>
+                    </div>
+                </div>
+
+                <div class="card-box kpi-card">
+                    <div class="kpi-icon">🍽️</div>
+                    <div class="kpi-data">
+                        <h3>--</h3>
+                        <p>Refeições servidas</p>
+                        <span class="badge">--</span>
+                    </div>
+                </div>
+
+                <div class="card-box kpi-card">
+                    <div class="kpi-icon">📊</div>
+                    <div class="kpi-data">
+                        <h3>--%</h3>
+                        <p>Taxa de desperdício</p>
+                        <span class="badge">--</span>
+                    </div>
+                </div>
+
+                <div class="card-box kpi-card">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-data">
+                        <h3>R$ --</h3>
+                        <p>Economia estimada</p>
+                        <span class="badge">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grid 2: Conteúdo Principal em Duas Colunas -->
+            <section class="dashboard-grid">
+
+                <!-- Coluna da Esquerda (Gráficos principais) -->
+                <div class="main-charts">
+
+                    <div class="charts-row">
+                        <div class="card-box">
+                            <h3>Evolução do desperdício (kg)</h3>
+                            <div class="chart-placeholder">Área do Gráfico 1</div>
+                        </div>
+                        <div class="card-box">
+                            <h3>Distribuição do desperdício por alimento</h3>
+                            <div class="chart-placeholder">Área do Gráfico 2</div>
+                        </div>
+                    </div>
+
+                    <div class="card-box">
+                        <h3>Desperdício por refeição</h3>
+                        <div class="meal-list">
+                            <div class="meal-item placeholder">
+                                <div>
+                                    <strong>--</strong>
+                                    <small>-- refeições</small>
+                                </div>
+                                <div>
+                                    <strong>-- kg</strong>
+                                    <small>--%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Coluna da Direita (Relatórios e Tabelas) -->
+                <div class="side-widgets">
+
+                    <div class="card-box">
+                        <h3>Ingredientes mais desperdiçados (kg)</h3>
+                        <div class="report-table-wrapper">
+                            <table class="report-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ingrediente</th>
+                                        <th>Quantidade</th>
+                                        <th>% do total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Arroz</td>
+                                        <td>22 kg</td>
+                                        <td>25,6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Feijão</td>
+                                        <td>18 kg</td>
+                                        <td>20,9%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Salada</td>
+                                        <td>14 kg</td>
+                                        <td>16,3%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Carne</td>
+                                        <td>10 kg</td>
+                                        <td>11,6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Frutas</td>
+                                        <td>8 kg</td>
+                                        <td>9,3%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card-box">
+                        <h3>Comparativo semanal da taxa de desperdício (%)</h3>
+                        <div class="chart-placeholder">Área do Gráfico Comparativo</div>
+                    </div>
+
+                    <div class="card-box">
+                        <h3>Alertas e Metas</h3>
+                        <div class="alert-box">
+                            <strong>--</strong>
+                            <p>Sem alertas no período selecionado.</p>
+                            <small>Nível: --</small>
+                        </div>
+                        <div class="goal-box">
+                            <div class="goal-header">
+                                <span>Meta mensal de desperdício</span>
+                                <span>Atual: --%</span>
+                            </div>
+                            <small>Meta: --</small>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%;"></div>
+                            </div>
+                            <span class="status-ok">● Situação: Sem dados</span>
+                        </div>
+                    </div>
+
+                    <div class="card-box">
+                        <h3>Resumo do período</h3>
+                        <ul class="summary-list">
+                            <li><span>Maior desperdício</span><strong>--</strong></li>
+                            <li><span>Menor desperdício</span><strong>--</strong></li>
+                            <li><span>Dia com maior taxa</span><strong>--</strong></li>
+                            <li><span>Dia com menor taxa</span><strong>--</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="card-box">
+                        <h3>Última atualização</h3>
+                        <p>📅 --</p>
+                        <small>Dados sincronizados automaticamente</small>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+    <script>
+    // Estado do dashboard
+    let periodoAtual = 'semana';
+
+    // Inicialização da autenticação - apenas Admin
+    document.addEventListener('DOMContentLoaded', async () => {
+        const authenticated = await Auth.init({
+            requireAuth: true,
+            allowedRoles: ['adm']
+        });
+        if (!authenticated) return;
+
+        // Logout
+        const logoutBtn = document.getElementById('btn-logout');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => Auth.logout());
+        }
+
+        // Seletor de período
+        document.querySelectorAll('.btn-period').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn-period').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                periodoAtual = btn.textContent.trim().toLowerCase().replace('mês', 'mes');
+                carregarRelatorios(periodoAtual);
+            });
+        });
+
+        await carregarRelatorios(periodoAtual);
+    });
+
+    async function carregarRelatorios(periodo = 'semana') {
+        try {
+            const res = await Auth.apiCall(`/api/desperdicio/dashboard?periodo=${periodo}`);
+            if (!res.ok) throw new Error('Erro ao carregar relatórios');
+            const data = await res.json();
+            if (data.sucesso) {
+                atualizarKPIs(data.kpis);
+                atualizarAlertas(data.alertas);
+                atualizarIngredientes(data.tabelas?.ingredientes);
+                atualizarResumo(data.resumo);
+            }
+        } catch (err) {
+            console.error('[Relatórios] Erro ao carregar:', err);
+        }
+    }
+
+    function atualizarKPIs(kpis) {
+        const kpisEl = document.querySelectorAll('.kpi-data h3');
+        if (kpisEl.length >= 4) {
+            kpisEl[0].textContent = `${(kpis.totalDesperdicio || 0)} kg`;
+            kpisEl[1].textContent = (kpis.refeicoesServidas || 0).toString();
+            kpisEl[2].textContent = `${(kpis.taxaDesperdicio || 0).toFixed(1)}%`;
+            kpisEl[3].textContent = `R$ ${(kpis.economiaEstimada || 0).toFixed(2)}`;
+        }
+    }
+
+    function atualizarAlertas(alertas) {
+        const alertBox = document.querySelector('.alert-box');
+        if (alertBox && alertas && alertas.length > 0) {
+            const a = alertas[0];
+            alertBox.innerHTML = `<strong>${escapeHtml(a.mensagem)}</strong><p>${escapeHtml(a.mensagem)}</p><small>Nível: ${escapeHtml(a.nivel || '-')}</small>`;
+        }
+    }
+
+    function atualizarIngredientes(ingredientes) {
+        const tbody = document.querySelector('.report-table tbody');
+        if (tbody && ingredientes) {
+            if (ingredientes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3">Nenhum dado disponível</td></tr>';
+                return;
+            }
+            tbody.innerHTML = ingredientes.map(i => `
+                <tr>
+                    <td>${escapeHtml(i.nome)}</td>
+                    <td>${i.kg} kg</td>
+                    <td>${i.percentual}%</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    function atualizarResumo(resumo) {
+        const items = document.querySelectorAll('.summary-list li');
+        if (items.length >= 2 && resumo) {
+            items[0].innerHTML = `<span>Maior desperdício</span><strong>${escapeHtml(resumo.maiorDesperdicio)}</strong>`;
+            items[1].innerHTML = `<span>Menor desperdício</span><strong>${escapeHtml(resumo.menorDesperdicio)}</strong>`;
+        }
+    }
+
+    function escapeHtml(valor) {
+        if (valor === null || valor === undefined) return '';
+        return String(valor)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "@goschool/gateway",
+  "version": "1.0.0",
+  "description": "GOSchool Gateway Service - Entry point, static files, API proxy",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "test": "npx jest --coverage",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.0",
+    "@goschool/shared": "^1.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0",
+    "supertest": "^6.3.4"
+  }
+}

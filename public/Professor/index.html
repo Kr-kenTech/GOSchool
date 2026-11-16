@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoSchool - Dashboard do Professor</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Professor/professor.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+
+<body>
+
+    <!-- SIDEBAR DO PROFESSOR -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GoSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="/Professor/" class="menu-item active">Início</a>
+            <a href="/Cardapio/cardapio.html" class="menu-item">Cardápio</a>
+            <a href="/Cardapio/cardapio.html" class="menu-item">Ingredientes</a>
+            <a href="/Reservas/" class="menu-item">Reservas</a>
+            <a href="/Configuracoes/config.html" class="menu-item">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon">👤</div>
+                <span data-auth-user="name">Olá, Professor!</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main>
+        <div class="main-wrapper">
+
+            <!-- CABEÇALHO -->
+            <header id="introducao">
+                <h1 id="saudacao-usuario">Olá, Professor(a)!</h1>
+                <p>Bem-vindo(a) ao painel de controle do GoSchool</p>
+            </header>
+
+            <!-- GRID DASHBOARD (DIVISÃO DAS DUAS COLUNAS) -->
+            <div class="dashboard-grid">
+
+                <!-- ================= COLUNA ESQUERDA ================= -->
+                <div class="coluna-esquerda">
+
+                    <!-- Linha Superior: Métricas e Cardápio -->
+                    <div class="linha-superior">
+                        <div class="card-metrica">
+                            <span class="icone-calendario">📅</span>
+                            <span class="numero-metrica" id="reservas-ativas">0</span>
+                            <span class="texto-metrica">Reservas Ativas</span>
+                        </div>
+
+                        <article class="refeicao-card">
+                            <div class="etiquetas">
+                                <span class="etiqueta hoje">Hoje</span>
+                                <span class="etiqueta horario">Almoço</span>
+                            </div>
+                            <svg class="placeholder-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="100" height="100" fill="#e2e8f0"/><circle cx="50" cy="40" r="20" fill="#cbd5e0"/><path d="M30 75 Q50 95 70 75" fill="none" stroke="#cbd5e0" stroke-width="6" stroke-linecap="round"/></svg>
+                            <h3>Prato Principal</h3>
+                            <button class="informacoes">Informações</button>
+                        </article>
+                    </div>
+
+                    <!-- Linha Inferior: Mais Refeições -->
+                    <div class="linha-inferior">
+                        <article class="refeicao-card">
+                            <div class="etiquetas">
+                                <span class="etiqueta tipo">Lanche</span>
+                            </div>
+                            <svg class="placeholder-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="100" height="100" fill="#e2e8f0"/><circle cx="50" cy="40" r="16" fill="#cbd5e0"/><path d="M35 72 Q50 88 65 72" fill="none" stroke="#cbd5e0" stroke-width="5" stroke-linecap="round"/></svg>
+                            <h3>Lanche da Tarde</h3>
+                            <button class="informacoes">Informações</button>
+                        </article>
+
+                        <article class="refeicao-card">
+                            <div class="etiquetas">
+                                <span class="etiqueta tipo">Jantar</span>
+                            </div>
+                            <svg class="placeholder-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="100" height="100" fill="#e2e8f0"/><circle cx="50" cy="40" r="18" fill="#cbd5e0"/><path d="M32 74 Q50 90 68 74" fill="none" stroke="#cbd5e0" stroke-width="5" stroke-linecap="round"/></svg>
+                            <h3>Sopa Nutritiva</h3>
+                            <button class="informacoes">Informações</button>
+                        </article>
+                    </div>
+
+                </div>
+
+                <!-- ================= COLUNA DIREITA ================= -->
+                <div class="coluna-direita">
+
+                    <!-- Card de Reservas Feitas -->
+                    <div class="card-reservas">
+                        <h2>Suas Reservas</h2>
+                        <ul class="lista-reservas" id="lista-reservas">
+                            <li class="loading">Carregando reservas...</li>
+                        </ul>
+                        <a href="/Reservas/" class="link-ver-todas">Ver todas as reservas →</a>
+                    </div>
+
+                    <!-- Card de Alergênicos / Status -->
+                    <div class="card-alergenicos">
+                        <div class="alerta-status">
+                            <div class="icon-check">✓</div>
+                            <span class="quantidade-zero" id="alergicos-count">0</span>
+                        </div>
+                        <span class="texto-zero" id="alergicos-texto">Nenhum Alergênico Restrito</span>
+                        <button id="perfil">Editar Perfil</button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Inicialização da autenticação - apenas para perfil professor
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inicializar auth - requer role 'professor'
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['professor']
+            });
+
+            if (!authenticated) return;
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            // Configurar botão Editar Perfil
+            const btnPerfil = document.getElementById('perfil');
+            if (btnPerfil) {
+                btnPerfil.addEventListener('click', () => {
+                    window.location.href = '/Configuracoes/config.html';
+                });
+            }
+
+            // Configurar botões Informações dos cards de refeição
+            document.querySelectorAll('.informacoes').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const card = btn.closest('.refeicao-card');
+                    const nome = card ? card.querySelector('h3')?.textContent : 'Refeição';
+                    alert(`Informações da refeição: ${nome}\nDetalhes nutricionais estarão disponíveis em breve.`);
+                });
+            });
+
+            // Carregar reservas do professor
+            await carregarReservasProfessor();
+
+            // Carregar alergênicos
+            await carregarAlergenicos();
+        });
+
+        async function carregarReservasProfessor() {
+            try {
+                const res = await Auth.apiCall('/api/reservas/minhas');
+                if (!res.ok) throw new Error('Erro ao carregar reservas');
+
+                const data = await res.json();
+                if (data.sucesso && data.reservas) {
+                    renderizarReservas(data.reservas);
+                    // Atualizar contador
+                    document.getElementById('reservas-ativas').textContent =
+                        data.reservas.length;
+                }
+            } catch (err) {
+                console.error('[Professor] Erro ao carregar reservas:', err);
+                document.getElementById('lista-reservas').innerHTML =
+                    '<li class="erro">Erro ao carregar reservas</li>';
+            }
+        }
+
+        function renderizarReservas(reservas) {
+            const lista = document.getElementById('lista-reservas');
+            if (!reservas || reservas.length === 0) {
+                lista.innerHTML = '<li class="vazio">Nenhuma reserva ativa</li>';
+                return;
+            }
+
+            lista.innerHTML = reservas.map(r => `
+                <li>
+                    <div>
+                        <strong>${r.descricao || r.categoria || 'Reserva'}</strong><br>
+                        <span class="data-reserva">${formatarData(r.data)} - ${r.horario}</span>
+                    </div>
+                    <span class="etiqueta horario">${r.status || 'Ativa'}</span>
+                </li>
+            `).join('');
+        }
+
+        async function carregarAlergenicos() {
+            try {
+                const res = await Auth.apiCall('/api/usuario/alergias');
+                if (!res.ok) throw new Error('Erro ao carregar alergênicos');
+
+                const data = await res.json();
+                if (data.sucesso && data.alergias && data.alergias.length > 0) {
+                    document.getElementById('alergicos-count').textContent = data.alergias.length;
+                    document.getElementById('alergicos-texto').textContent =
+                        `Alergênicos: ${data.alergias.join(', ')}`;
+                }
+            } catch (err) {
+                console.warn('[Professor] Não foi possível carregar alergênicos:', err);
+            }
+        }
+
+        function formatarData(dataStr) {
+            if (!dataStr) return '';
+            const [ano, mes, dia] = dataStr.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+    </script>
+</body>
+
+</html>

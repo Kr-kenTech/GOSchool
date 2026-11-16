@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOSchool - Cardápio</title>
+    <link rel="stylesheet" href="/design-system.css">
+    <link rel="stylesheet" href="/Cardapio/cardapio.css">
+    <script src="/theme.js"></script>
+    <script src="/global-preferences.js"></script>
+    <script src="/auth.js"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite" hidden>
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p class="loading-text">Carregando...</p>
+    </div>
+
+    <!-- Modal 403 Forbidden -->
+    <div id="modal403" class="modal-overlay" hidden>
+        <div class="modal-box" style="max-width: 360px;">
+            <div class="modal-icon warning" aria-hidden="true">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h3 class="modal-title">Acesso Restrito</h3>
+            <p class="modal-text">Apenas leitura para perfil Aluno.</p>
+            <button onclick="close403Modal()" class="btn-primary modal-btn">Fechar</button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <img src="/logo-simplificada.png" alt="Logo GOSchool">
+        </div>
+
+        <nav class="menu">
+            <a href="#" class="menu-item active" id="nav-dashboard" onclick="switchTab('dashboard')">Cardápio de Hoje</a>
+            <a href="#" class="menu-item" id="nav-weekly" onclick="switchTab('weekly')">Cardápio Semanal</a>
+            <a href="#" class="menu-item" id="nav-nutrition" onclick="switchTab('nutrition')">Nutrição</a>
+            <a href="#" class="menu-item" id="nav-restrictions" onclick="switchTab('restrictions')">Restrições</a>
+            <a href="#" class="menu-item" id="nav-history" onclick="switchTab('history')">Histórico</a>
+            <a href="#" class="menu-item" id="nav-settings" onclick="switchTab('settings')" data-auth-role="adm">Configurações</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="usuario">
+                <div class="usuario-icon" aria-hidden="true">👤</div>
+                <span id="sidebarUserName" data-auth-user="name">Carregando...</span>
+            </div>
+            <button id="btn-logout" class="sair" type="button">
+                <span class="sair-icon" aria-hidden="true">➔</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="header-actions">
+                <button class="icon-btn" id="notificationsBtn" title="Notificações" aria-label="Notificações">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge" hidden></span>
+                </button>
+
+                <div class="user-profile" id="userProfile">
+                    <div class="avatar" id="topUserAvatar" aria-hidden="true"></div>
+                    <span id="topUserName" class="user-name">Carregando...</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Canvas -->
+        <div class="content-wrapper">
+
+            <!-- TAB 1: DASHBOARD (Cardápio de Hoje) -->
+            <section id="tab-dashboard" class="tab-panel active" aria-labelledby="dashboard-title">
+                <div class="tab-header">
+                    <h1 class="tab-title" id="dashboard-title">Carregando...</h1>
+                    <p class="tab-subtitle" id="dashboard-date"></p>
+                </div>
+
+                <!-- Cards Grid -->
+                <div class="meals-grid" id="dailyMenuContainer" role="list" aria-label="Refeições de hoje">
+                    <!-- Cards inseridos via JS -->
+                </div>
+            </section>
+
+            <!-- TAB 2: CARDÁPIO SEMANAL -->
+            <section id="tab-weekly" class="tab-panel" aria-labelledby="weekly-title" hidden>
+                <div class="tab-header">
+                    <h1 class="tab-title" id="weekly-title">Cardápio da Semana</h1>
+                    <p class="tab-subtitle">Visualize todas as refeições da semana</p>
+                </div>
+
+                <!-- Weekly Grid Container -->
+                <div class="weekly-container" id="weeklyMenuContainer">
+                    <!-- Cards por dia inseridos via JS -->
+                </div>
+            </section>
+
+            <!-- TAB 3: NUTRIÇÃO -->
+            <section id="tab-nutrition" class="tab-panel" aria-labelledby="nutrition-title" hidden>
+                <div class="tab-header">
+                    <h1 class="tab-title" id="nutrition-title">Informações Nutricionais</h1>
+                    <p class="tab-subtitle">Detalhes nutricionais das refeições</p>
+                </div>
+
+                <div class="card" id="nutritionPlaceholder">
+                    <div class="placeholder-content">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                        <p>Selecione uma refeição no cardápio para ver detalhes nutricionais completos.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: RESTRIÇÕES -->
+            <section id="tab-restrictions" class="tab-panel" aria-labelledby="restrictions-title" hidden>
+                <div class="tab-header">
+                    <h1 class="tab-title" id="restrictions-title">Restrições Alimentares</h1>
+                    <p class="tab-subtitle">Gerencie alergênicos e restrições dietéticas</p>
+                </div>
+
+                <div id="restrictionsContent" class="restrictions-content">
+                    <!-- Conteúdo dinâmico baseado no perfil -->
+                </div>
+            </section>
+
+            <!-- TAB 5: HISTÓRICO -->
+            <section id="tab-history" class="tab-panel" aria-labelledby="history-title" hidden>
+                <div class="tab-header">
+                    <h1 class="tab-title" id="history-title">Histórico de Cardápios</h1>
+                    <p class="tab-subtitle">Cardápios de semanas anteriores</p>
+                </div>
+
+                <div class="card" id="historyPlaceholder">
+                    <div class="placeholder-content">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <p>Histórico de cardápios será implementado em breve.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: CONFIGURAÇÕES (Admin only) -->
+            <section id="tab-settings" class="tab-panel" aria-labelledby="settings-title" hidden data-auth-role="adm">
+                <div class="tab-header">
+                    <h1 class="tab-title" id="settings-title">Gerenciar Cardápio</h1>
+                    <p class="tab-subtitle">Cadastrar, editar e excluir refeições</p>
+                </div>
+
+                <div id="adminCardapioContent" class="admin-content">
+                    <!-- Formulário de criação/edição -->
+                    <div class="card" id="mealFormContainer">
+                        <h2 class="section-title" id="mealFormTitle">Nova Refeição</h2>
+                        <form id="mealForm" class="form-grid" novalidate>
+                            <input type="hidden" id="mealId" name="id">
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mealNome" class="form-label">Nome da Refeição <span class="required" aria-hidden="true">*</span></label>
+                                    <input type="text" id="mealNome" name="nome" required class="form-input" placeholder="Ex: Arroz, feijão, frango grelhado e salada">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealCategoria" class="form-label">Categoria <span class="required" aria-hidden="true">*</span></label>
+                                    <select id="mealCategoria" name="categoria" required class="form-select">
+                                        <option value="">Selecione...</option>
+                                        <option value="cafe_manha">Café da Manhã</option>
+                                        <option value="almoco">Almoço</option>
+                                        <option value="lanche">Lanche</option>
+                                        <option value="jantar">Jantar</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="mealDescricao" class="form-label">Descrição</label>
+                                <textarea id="mealDescricao" name="descricao" rows="3" class="form-textarea" placeholder="Descrição detalhada da refeição"></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mealDiaSemana" class="form-label">Dia da Semana</label>
+                                    <select id="mealDiaSemana" name="dia_semana" class="form-select">
+                                        <option value="">Selecione...</option>
+                                        <option value="segunda">Segunda-feira</option>
+                                        <option value="terca">Terça-feira</option>
+                                        <option value="quarta">Quarta-feira</option>
+                                        <option value="quinta">Quinta-feira</option>
+                                        <option value="sexta">Sexta-feira</option>
+                                        <option value="sabado">Sábado</option>
+                                        <option value="domingo">Domingo</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealHorario" class="form-label">Horário</label>
+                                    <input type="time" id="mealHorario" name="horario" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealCalorias" class="form-label">Calorias (kcal)</label>
+                                    <input type="number" id="mealCalorias" name="calorias" min="0" class="form-input" placeholder="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealProteina" class="form-label">Proteína (g)</label>
+                                    <input type="number" id="mealProteina" name="proteina" min="0" step="0.1" class="form-input" placeholder="0">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mealCarboidrato" class="form-label">Carboidratos (g)</label>
+                                    <input type="number" id="mealCarboidrato" name="carboidrato" min="0" step="0.1" class="form-input" placeholder="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealImagem" class="form-label">Imagem (URL)</label>
+                                    <input type="url" id="mealImagem" name="imagem" class="form-input" placeholder="https://...">
+                                </div>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label class="form-label">Alergênicos</label>
+                                <div class="allergen-checkboxes" id="allergenCheckboxes" role="group" aria-label="Alergênicos">
+                                    <!-- Preenchido via JS -->
+                                </div>
+                                <p class="form-hint">Selecione os alergênicos presentes nesta refeição.</p>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="mealObservacoes" class="form-label">Observações</label>
+                                <textarea id="mealObservacoes" name="observacoes" rows="2" class="form-textarea" placeholder="Observações adicionais"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary" id="mealSubmitBtn">Salvar Refeição</button>
+                                <button type="button" id="mealCancelBtn" class="btn-secondary hidden">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de refeições para gerenciar -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="section-title">Refeições Cadastradas</h3>
+                        </div>
+                        <div class="meal-list" id="mealListContainer">
+                            <!-- Lista inserida via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Meal Detail Modal -->
+    <div id="mealModal" class="modal-overlay" hidden>
+        <div class="modal-box modal-large" role="dialog" aria-modal="true" aria-labelledby="mealModalTitle">
+            <div class="modal-header">
+                <h2 id="mealModalTitle">Detalhes da Refeição</h2>
+                <button class="modal-close" onclick="closeMealModal()" aria-label="Fechar modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="mealModalBody">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Externo -->
+    <script src="/Cardapio/cardapio.js"></script>
+
+    <script>
+        // Inicialização da autenticação para Cardápio
+        // Aluno, Professor e Admin podem acessar (leitura)
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authenticated = await Auth.init({
+                requireAuth: true,
+                allowedRoles: ['aluno', 'professor', 'adm']
+            });
+
+            if (!authenticated) return;
+
+            // Atualizar UI do usuário
+            const user = Auth.getCurrentUser();
+            if (user) {
+                atualizarUIUsuario(user);
+            }
+
+            // Configurar logout
+            const logoutBtn = document.getElementById('btn-logout');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => Auth.logout());
+            }
+
+            // Inicializar cardapio.js após auth
+            if (typeof inicializarCardapio === 'function') {
+                inicializarCardapio();
+            }
+        });
+
+        function atualizarUIUsuario(user) {
+            const roleLabels = {
+                'aluno': 'ALUNO',
+                'professor': 'PROFESSOR',
+                'adm': 'ADMINISTRADOR'
+            };
+
+            const roleText = roleLabels[user.tipo] || user.tipo.toUpperCase();
+            const nome = user.nome || 'Usuário';
+
+            // Sidebar
+            document.getElementById('sidebarUserName').textContent = nome;
+
+            // Top header
+            document.getElementById('topUserName').textContent = nome;
+
+            // Avatar inicial
+            const avatar = document.getElementById('topUserAvatar');
+            if (avatar) {
+                avatar.textContent = nome.charAt(0).toUpperCase();
+                avatar.style.background = `hsl(${nome.charCodeAt(0) * 13 % 360}, 60%, 40%)`;
+            }
+
+            // Dashboard greeting
+            document.getElementById('dashboard-title').textContent = `Olá, ${nome.split(' ')[0]}! Cardápio de Hoje`;
+
+            // Date
+            const hoje = new Date();
+            const opcoes = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('dashboard-date').textContent = hoje.toLocaleDateString('pt-BR', opcoes);
+        }
+
+        function close403Modal() {
+            document.getElementById('modal403').hidden = true;
+        }
+
+        function closeMealModal() {
+            document.getElementById('mealModal').hidden = true;
+        }
+    </script>
+</body>
+</html>
