@@ -1,5 +1,5 @@
 /* =====================================================
-   RESET E CONFIGURAÇÃO DA RAÍZ
+    RESET E CONFIGURAÇÃO DA RAÍZ
 ===================================================== */
 
 * {
@@ -16,15 +16,16 @@ html {
 }
 
 html.font-small {
-    font-size: 13px;
+    font-size: 13px !important;
 }
 
-html.font-medium {
-    font-size: 16px;
+html.font-medium,
+html.font-default {
+    font-size: 16px !important;
 }
 
 html.font-large {
-    font-size: 19px;
+    font-size: 19px !important;
 }
 
 html, body {
@@ -41,7 +42,7 @@ body {
 
 
 /* =====================================================
-   SIDEBAR
+    SIDEBAR
 ===================================================== */
 
 .sidebar {
@@ -80,7 +81,7 @@ body {
 .menu-item {
     color: #ffffff;
     text-decoration: none;
-    font-size: 15px;
+    font-size: 0.9375rem; /* 15px */
     padding: 12px 24px;
     transition: background 0.2s ease;
 }
@@ -116,19 +117,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 1rem; /* 16px */
     font-weight: bold;
 }
 
 .usuario span {
-    font-size: 15px;
+    font-size: 0.9375rem; /* 15px */
     font-weight: 600;
 }
 
 .sair {
     color: white;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 0.875rem; /* 14px */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -140,8 +141,9 @@ body {
     opacity: 1;
 }
 
+
 /* =====================================================
-   ÁREA PRINCIPAL
+    ÁREA PRINCIPAL
 ===================================================== */
 
 main {
@@ -155,7 +157,7 @@ main {
 
 .main-wrapper {
     width: 100%;
-    max-width: 900px; /* Largura ideal para leitura e organização vertical */
+    max-width: 900px;
 }
 
 
@@ -292,7 +294,7 @@ main {
 
 
 /* =====================================================
-   LAYOUT VERTICAL DOS CARDS (1 COLUNA, MAIORES E LIMPOS)
+    LAYOUT VERTICAL DOS CARDS
 ===================================================== */
 
 .config-vertical-list {
@@ -806,8 +808,9 @@ input:checked + .slider:before {
     font-size: 0.8rem;
     color: #94a3b8;
 }
+
 /* =====================================================
-   RESPONSIVIDADE (DISPOSITIVOS MÓVEIS)
+    RESPONSIVIDADE (DISPOSITIVOS MÓVEIS)
 ===================================================== */
 
 @media (max-width: 768px) {

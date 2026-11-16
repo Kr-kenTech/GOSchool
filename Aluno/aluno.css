@@ -1,5 +1,5 @@
 /* =====================================================
-   RESET E BASE
+    RESET E CONFIGURAÇÃO DA RAÍZ
 ===================================================== */
 
 * {
@@ -9,16 +9,39 @@
     font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-body {
-    background: #f4f5f9;
-    color: #1a202c;
-    display: flex;
+/* O font-size do html controla a escala 'rem' do site todo */
+html {
+    font-size: 16px;
+    transition: font-size 0.2s ease;
+}
+
+html.font-small {
+    font-size: 13px !important;
+}
+
+html.font-medium,
+html.font-default {
+    font-size: 16px !important;
+}
+
+html.font-large {
+    font-size: 19px !important;
+}
+
+html, body {
+    width: 100%;
     min-height: 100vh;
 }
 
+body {
+    background: #f4f5f9;
+    color: #111;
+    display: flex;
+    transition: background-color 0.3s, color 0.3s;
+}
 
 /* =====================================================
-   SIDEBAR
+    SIDEBAR
 ===================================================== */
 
 .sidebar {
@@ -57,7 +80,7 @@ body {
 .menu-item {
     color: #ffffff;
     text-decoration: none;
-    font-size: 15px;
+    font-size: 0.9375rem; /* 15px */
     padding: 12px 24px;
     transition: background 0.2s ease;
 }
@@ -93,19 +116,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 1rem; /* 16px */
     font-weight: bold;
 }
 
 .usuario span {
-    font-size: 15px;
+    font-size: 0.9375rem; /* 15px */
     font-weight: 600;
 }
 
 .sair {
     color: white;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 0.875rem; /* 14px */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -119,7 +142,7 @@ body {
 
 
 /* =====================================================
-   ÁREA PRINCIPAL
+    ÁREA PRINCIPAL
 ===================================================== */
 
 main {
@@ -147,14 +170,14 @@ main {
 }
 
 #introducao h1 {
-    font-size: 26px;
+    font-size: 1.625rem; /* 26px */
     font-weight: 700;
     color: #1a202c;
 }
 
 #introducao p {
     color: #64748b;
-    font-size: 15px;
+    font-size: 0.9375rem; /* 15px */
     margin-top: 2px;
 }
 
@@ -165,7 +188,7 @@ main {
     height: 42px;
     border-radius: 50%;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    font-size: 18px;
+    font-size: 1.125rem; /* 18px */
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -179,7 +202,7 @@ main {
 
 
 /* =====================================================
-   CONTAINER CARDÁPIO
+    CONTAINER CARDÁPIO
 ===================================================== */
 
 #conteiner {
@@ -204,11 +227,11 @@ main {
 }
 
 .icone-cardapio {
-    font-size: 24px;
+    font-size: 1.5rem; /* 24px */
 }
 
 .titulo-cardapio h2 {
-    font-size: 20px;
+    font-size: 1.25rem; /* 20px */
     font-weight: 600;
     color: #1a202c;
 }
@@ -219,7 +242,7 @@ main {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 14px;
+    font-size: 0.875rem; /* 14px */
     color: #4a5568;
 }
 
@@ -235,7 +258,7 @@ main {
     border: none;
     background: transparent;
     padding: 6px 14px;
-    font-size: 13px;
+    font-size: 0.8125rem; /* 13px */
     border-radius: 8px;
     cursor: pointer;
     color: #4a5568;
@@ -250,7 +273,7 @@ main {
 
 
 /* =====================================================
-   GRID DOS CARDS DE REFEIÇÃO
+    GRID DOS CARDS DE REFEIÇÃO
 ===================================================== */
 
 .cardapio-grid {
@@ -287,7 +310,7 @@ main {
 .etiqueta {
     padding: 3px 10px;
     border-radius: 6px;
-    font-size: 11px;
+    font-size: 0.6875rem; /* 11px */
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -318,7 +341,7 @@ main {
 }
 
 .refeicao h3 {
-    font-size: 16px;
+    font-size: 1rem; /* 16px */
     font-weight: 700;
     color: #1e293b;
     margin-bottom: 6px;
@@ -326,7 +349,7 @@ main {
 
 .alergeno {
     color: #e11d48;
-    font-size: 12px;
+    font-size: 0.75rem; /* 12px */
     font-weight: 600;
     margin-bottom: 15px;
 }
@@ -339,7 +362,7 @@ main {
     border-radius: 8px;
     background: #1450a3;
     color: white;
-    font-size: 13px;
+    font-size: 0.8125rem; /* 13px */
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
@@ -351,7 +374,7 @@ main {
 
 
 /* =====================================================
-   CAIXA DE ALERTA DE ALERGIA
+    CAIXA DE ALERTA DE ALERGIA
 ===================================================== */
 
 .alerta-alergia-box {
@@ -373,11 +396,11 @@ main {
 }
 
 .alerta-icon {
-    font-size: 24px;
+    font-size: 1.5rem; /* 24px */
 }
 
 .quantidade {
-    font-size: 22px;
+    font-size: 1.375rem; /* 22px */
     color: #d97706;
     font-weight: bold;
 }
@@ -385,12 +408,12 @@ main {
 .alerta-texto {
     display: flex;
     flex-direction: column;
-    font-size: 13px;
+    font-size: 0.8125rem; /* 13px */
     color: #78350f;
 }
 
 .alerta-texto strong {
-    font-size: 14px;
+    font-size: 0.875rem; /* 14px */
 }
 
 .btn-editar-perfil {
@@ -399,7 +422,7 @@ main {
     border-radius: 8px;
     background: #d97706;
     color: white;
-    font-size: 13px;
+    font-size: 0.8125rem; /* 13px */
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
@@ -409,9 +432,142 @@ main {
     background: #b45309;
 }
 
+/* =====================================================
+    ESTILOS DA PÁGINA DE CONSENTIMENTO (LGPD / ECA)
+===================================================== */
+
+.consent-body {
+    background-color: #f4f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.consent-container {
+    background: #ffffff;
+    width: 100%;
+    max-width: 480px;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+.consent-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.consent-header svg {
+    color: #1450a3;
+    width: 28px;
+    height: 28px;
+}
+
+.consent-container h2 {
+    font-size: 1.375rem; /* 22px */
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+}
+
+.consent-description {
+    font-size: 0.9375rem; /* 15px */
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.consent-container .form-group {
+    margin-bottom: 20px;
+}
+
+.consent-container label {
+    display: block;
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.consent-container input[type="text"],
+.consent-container select {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 0.9375rem; /* 15px */
+    border: 1px solid #cbd5e0;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    color: #111;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.consent-container input[type="text"]:focus,
+.consent-container select:focus {
+    outline: none;
+    border-color: #1450a3;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(20, 80, 163, 0.15);
+}
+
+.terms-box {
+    background-color: #f8fafc;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 0.8125rem; /* 13px */
+    color: #4a5568;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 24px;
+    font-size: 0.875rem; /* 14px */
+    color: #1e293b;
+    cursor: pointer;
+}
+
+.checkbox-group input {
+    margin-top: 2px;
+    width: 16px;
+    height: 16px;
+    accent-color: #1450a3;
+    cursor: pointer;
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: #1450a3;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s active;
+}
+
+.btn-submit:hover {
+    background-color: #0f3d80;
+}
+
+.btn-submit:active {
+    transform: scale(0.99);
+}
 
 /* =====================================================
-   RESPONSIVIDADE
+    RESPONSIVIDADE
 ===================================================== */
 
 @media (max-width: 900px) {
@@ -451,7 +607,7 @@ main {
 
     .menu-item {
         padding: 6px 10px;
-        font-size: 13px;
+        font-size: 0.8125rem; /* 13px */
     }
 
     .menu-item.active {

@@ -1,143 +1,115 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     /* =====================================================
-       0. LIMPEZA E EXIBIÇÃO DO NOME DO USUÁRIO (SEM NÚMEROS)
-    ===================================================== */
-    const userEmail = localStorage.getItem('userEmail') || localStorage.getItem('email') || '';
-    const userRole = localStorage.getItem('userRole') || localStorage.getItem('tipo') || 'aluno';
-
-    const roleFormatada = userRole.charAt(0).toUpperCase() + userRole.slice(1);
-
-    // Função global/local para limpar estritamente o nome (removendo pontos e números da matrícula)
-    function limparPrimeiroNome(nomeBruto, emailBruto) {
-        let base = '';
-        if (nomeBruto && nomeBruto.trim() !== '') {
-            base = nomeBruto.trim().split(' ')[0];
-        } else if (emailBruto) {
-            base = emailBruto.split('@')[0].split('.')[0];
-        }
-        let apenasLetras = base.replace(/[^a-zA-ZÀ-ÿ]/g, '');
-        if (!apenasLetras) return roleFormatada;
-        return apenasLetras.charAt(0).toUpperCase() + apenasLetras.slice(1).toLowerCase();
-    }
-
-    const nomeInicial = limparPrimeiroNome('', userEmail);
-
-    // Atualiza os elementos de texto do perfil imediatamente
-    const labelRole = document.getElementById('role-usuario-label');
-    const displayRole = document.getElementById('current-role-display');
-    const profileTitle = document.getElementById('user-profile-title');
-    const emailDisplay = document.getElementById('user-email-display');
-
-    if (labelRole) labelRole.textContent = nomeInicial;
-    if (displayRole) displayRole.textContent = nomeInicial;
-    if (profileTitle) profileTitle.textContent = nomeInicial;
-    if (emailDisplay) emailDisplay.textContent = userEmail || 'email@institucional.mg.gov.br';
-
-    // Ajusta link da barra lateral
-    const linkInicio = document.getElementById('link-inicio');
-    if (linkInicio) {
-        if (userRole === 'aluno') linkInicio.href = '/Aluno/';
-        else if (userRole === 'professor') linkInicio.href = '/Professor/';
-        else if (userRole === 'adm') linkInicio.href = '/adm/';
-    }
-
-    // Busca dados atualizados do backend (/usuarios.json via API)
-    if (userEmail) {
-        fetch(`/api/usuario?email=${encodeURIComponent(userEmail)}`)
-            .then(res => res.json())
-            .then(resultado => {
-                if (resultado.sucesso && resultado.usuario) {
-                    const usuario = resultado.usuario;
-                    const nomeFinal = limparPrimeiroNome(usuario.nome, usuario.email);
-
-                    if (labelRole) labelRole.textContent = nomeFinal;
-                    if (displayRole) displayRole.textContent = nomeFinal;
-                    if (profileTitle) profileTitle.textContent = nomeFinal;
-
-                    // Restrições e Alergias se houverem na tela de config
-                    const boxRestricoes = document.getElementById('box-restricoes');
-                    if (boxRestricoes) {
-                        boxRestricoes.textContent = usuario.restricoes || 'Nenhuma restrição cadastrada.';
-                    }
-                }
-            })
-            .catch(err => console.error('Erro ao buscar dados complementares do usuário:', err));
-    }
-
-
-    /* =====================================================
-       1. ALTERAÇÃO DE TAMANHO DA FONTE
+       1. SINCRONIZAÇÃO DE TAMANHO DE FONTE COM A API GLOBAL
     ===================================================== */
     const fontButtons = document.querySelectorAll('.font-control button');
 
-    function applyFontSize(size) {
-        document.documentElement.classList.remove('font-small', 'font-medium', 'font-large');
-        document.documentElement.classList.add(`font-${size}`);
-
+    function updateFontUI(currentFont) {
         fontButtons.forEach(btn => {
-            if (btn.getAttribute('data-size') === size) {
+            const fontType = btn.getAttribute('data-font');
+            if (fontType === currentFont) {
                 btn.classList.add('active');
             } else {
                 btn.classList.remove('active');
             }
         });
-
-        localStorage.setItem('fontSize', size);
     }
 
-    const savedFontSize = localStorage.getItem('fontSize') || 'medium';
-    applyFontSize(savedFontSize);
+    // Inicializa o estado visual baseado nas preferências salvas
+    const currentPrefs = window.AmaralPrefs.get();
+    updateFontUI(currentPrefs.font);
 
+    // Evento de clique nos botões de fonte
     fontButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const size = button.getAttribute('data-size');
-            applyFontSize(size);
+            const font = button.getAttribute('data-font');
+            if (font) {
+                window.AmaralPrefs.setFont(font); // Atualiza globalmente e salva
+                updateFontUI(font);
+            }
         });
     });
 
-
-   /* =====================================================
-       2. ALTERAÇÃO DE TEMA (CLARO / ESCURO GLOBAL)
+    /* =====================================================
+       2. SINCRONIZAÇÃO DE TEMA COM A API GLOBAL
     ===================================================== */
     const themeButtons = document.querySelectorAll('.theme-control button');
 
-    function applyTheme(theme) {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark-theme');
-            document.body.classList.add('dark-theme');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark-theme');
-            document.body.classList.remove('dark-theme');
-            localStorage.setItem('theme', 'light');
-        }
-
-        // Atualiza o estado visual dos botões (caso esteja na página de config)
-        if (themeButtons.length > 0) {
-            themeButtons.forEach((btn, index) => {
-                const isDarkBtn = index === 1;
-                if ((theme === 'dark' && isDarkBtn) || (theme === 'light' && !isDarkBtn)) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
+    function updateThemeUI(currentTheme) {
+        themeButtons.forEach(btn => {
+            const themeType = btn.getAttribute('data-theme'); // Lê o data-theme ('light' ou 'dark')
+            if (themeType === currentTheme) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
     }
 
-    // Carrega o tema salvo ou usa 'light'
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme);
+    // Inicializa o estado visual do tema com base nas preferências globais
+    updateThemeUI(currentPrefs.theme);
 
-    // Evento de clique nos botões de tema (na página de configurações)
+    // Evento de clique nos botões de tema
     if (themeButtons.length > 0) {
-        themeButtons.forEach((btn, index) => {
+        themeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
-                const selectedTheme = index === 1 ? 'dark' : 'light';
-                applyTheme(selectedTheme);
+                const selectedTheme = btn.getAttribute('data-theme'); // Pega 'light' ou 'dark' do botão
+                if (selectedTheme) {
+                    window.AmaralPrefs.setTheme(selectedTheme); // Atualiza globalmente, salva no localStorage e aplica classes
+                    updateThemeUI(selectedTheme);
+                }
             });
         });
     }
 
+    /* =====================================================
+       3. GESTÃO DE PERFIL E ROTEAMENTO DINÂMICO DA SIDEBAR
+    ===================================================== */
+    const userRole = localStorage.getItem("userRole") || "aluno";
+    const userEmail = localStorage.getItem("userEmail") || "email@institucional.mg.gov.br";
+
+    // Atualiza os rótulos visuais na página de configurações
+    const roleLabel = document.getElementById("role-usuario-label");
+    const currentRoleDisplay = document.getElementById("current-role-display");
+    const userProfileTitle = document.getElementById("user-profile-title");
+    const userEmailDisplay = document.getElementById("user-email-display");
+    const linkInicio = document.getElementById("link-inicio");
+
+    if (roleLabel) roleLabel.textContent = userRole.toUpperCase();
+    if (currentRoleDisplay) currentRoleDisplay.textContent = userRole;
+    if (userProfileTitle) userProfileTitle.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+    if (userEmailDisplay) userEmailDisplay.textContent = userEmail;
+
+    // Configura o link dinâmico "Início" com base no perfil logado
+    if (linkInicio) {
+        if (userRole === "aluno") {
+            linkInicio.href = "/Aluno/";
+        } else if (userRole === "professor") {
+            linkInicio.href = "/Professor/";
+        } else if (userRole === "adm" || userRole === "administrador") {
+            linkInicio.href = "/adm/";
+        } else {
+            linkInicio.href = "/";
+        }
+    }
+
+    // Exibe ou oculta elementos da sidebar com base nas permissões (Stakeholders / Requisitos)
+    const linkReservas = document.getElementById("link-reservas");
+    const linkUsuarios = document.getElementById("link-usuarios");
+    const linkRelatorios = document.getElementById("link-relatorios");
+
+    if (userRole === "aluno") {
+        if (linkReservas) linkReservas.style.display = "none";
+        if (linkUsuarios) linkUsuarios.style.display = "none";
+        if (linkRelatorios) linkRelatorios.style.display = "none";
+    } else if (userRole === "professor") {
+        if (linkReservas) linkReservas.style.display = "block";
+        if (linkUsuarios) linkUsuarios.style.display = "none";
+        if (linkRelatorios) linkRelatorios.style.display = "none";
+    } else if (userRole === "adm" || userRole === "administrador") {
+        if (linkReservas) linkReservas.style.display = "block";
+        if (linkUsuarios) linkUsuarios.style.display = "block";
+        if (linkRelatorios) linkRelatorios.style.display = "block";
+    }
 });

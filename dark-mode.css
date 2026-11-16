@@ -1,5 +1,5 @@
 /* =====================================================
-   MODO ESCURO GLOBAL - AMARALHUB (dark-mode.css)
+   MODO ESCURO GLOBAL - GoSchool (dark-mode.css)
 ===================================================== */
 
 html.dark-theme,
@@ -122,4 +122,40 @@ html.dark-theme .alert-box,
 html.dark-theme .warning-box {
     background-color: #1e293b !important;
     color: #f8fafc !important;
+}
+
+/* ===== TEMA ===== */
+html.dark-theme,
+html.dark-theme body {
+  color-scheme: dark;
+}
+
+html.light-theme,
+html.light-theme body {
+  color-scheme: light;
+}
+
+/* =====================================================
+   ESCALAS DE TAMANHO DE FONTE (Sincronizado com AmaralPrefs)
+===================================================== */
+
+/* Tamanho Pequeno (A-) */
+html.font-small {
+    font-size: 13px;
+}
+
+/* Tamanho Padrão / Médio */
+html.font-default {
+    font-size: 16px;
+}
+
+/* Tamanho Grande (A+) */
+html.font-large {
+    font-size: 19px;
+}
+
+/* Tamanho Mono / Alternativo (se aplicável) */
+html.font-mono {
+    font-size: 16px;
+    font-family: monospace, sans-serif;
 }
