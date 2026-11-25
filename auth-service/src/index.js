@@ -223,17 +223,27 @@ app.post('/internal/google-login', async (req, res) => {
     });
   }
 
-  const tipo = identificarTipoUsuario(email);
-
-  if (!tipo) {
+  const dominiosPermitidos = ['@aluno.mg.gov.br', '@educacao.mg.gov.br'];
+  if (!dominiosPermitidos.some((dominio) => email.endsWith(dominio))) {
     return res.status(403).json({
       sucesso: false,
-      erro: 'Acesso restrito. Utilize um e-mail institucional válido (@educacao.mg.gov.br ou @aluno.mg.gov.br).',
+      erro: 'Acesso restrito. Utilize um e-mail institucional autorizado.',
     });
   }
 
   try {
     const pool = await getDb();
+    const [vinculos] = await pool.query(
+      'SELECT papel FROM vinculo_email_papel WHERE email = ? AND ativo = TRUE LIMIT 1',
+      [email]
+    );
+    if (vinculos.length === 0) {
+      return res.status(403).json({
+        sucesso: false,
+        erro: 'Esta conta Google ainda não possui um vínculo de acesso cadastrado pela coordenação.',
+      });
+    }
+    const tipo = vinculos[0].papel;
     const [rows] = await pool.query('SELECT * FROM usuario WHERE email = ?', [email]);
     let usuarioEncontrado;
     let usuarioId;
