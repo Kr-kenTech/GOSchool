@@ -76,63 +76,15 @@ router.get('/reservas', (req, res) => {
 });
 
 // ============================================================
-// POST /api/login — Login com credenciais (proxy para auth-service)
+// POST /api/login — autenticação local desativada (RF03/RF04)
+// O acesso institucional é realizado exclusivamente por Google OAuth.
 // ============================================================
 
-router.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  const dominiosPermitidos = ['@educacao.mg.gov.br', '@aluno.mg.gov.br'];
-  const ehValido = dominiosPermitidos.some(
-    (d) => email && email.endsWith(d)
-  );
-
-  if (!ehValido) {
-    return res.status(403).json({
-      sucesso: false,
-      erro: 'Acesso restrito. Utilize um e-mail institucional válido (@educacao.mg.gov.br ou @aluno.mg.gov.br).',
-    });
-  }
-
-  try {
-    const response = await fetch(`${AUTH_SERVICE_URL}/internal/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.sucesso) {
-      return res.status(401).json({
-        sucesso: false,
-        erro: data.erro || 'E-mail ou senha incorretos.',
-      });
-    }
-
-    const user = {
-      id: data.usuario.id || data.usuario.email,
-      email: data.usuario.email,
-      nome: data.usuario.nome,
-      tipo: data.usuario.tipo,
-    };
-    const token = generateJwtToken(user);
-    setJwtCookie(res, token);
-    setCsrfCookie(res);
-
-    return res.json({
-      sucesso: true,
-      usuario: {
-        email: data.usuario.email,
-        nome: data.usuario.nome,
-        tipo: data.usuario.tipo,
-      },
-      mensagem: 'Login realizado com sucesso!',
-    });
-  } catch (error) {
-    console.error('[Gateway] Erro ao comunicar com Auth Service:', error);
-    return res.status(500).json({ sucesso: false, erro: 'Erro interno de comunicação.' });
-  }
+router.post('/api/login', (req, res) => {
+  return res.status(410).json({
+    sucesso: false,
+    erro: 'Login por senha local não está disponível. Utilize sua conta Google institucional.',
+  });
 });
 
 // ============================================================
@@ -211,6 +163,15 @@ router.get('/api/me', authMiddleware, (req, res) => {
 });
 
 // ============================================================
+// GET /api/auth/config — configuração pública necessária ao Google Identity
+// ============================================================
+
+router.get('/api/auth/config', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  return res.json({ clientId: config.GOOGLE_CLIENT_ID || '' });
+});
+
+// ============================================================
 // GET /api/csrf-token — Retorna token CSRF
 // ============================================================
 
@@ -220,70 +181,69 @@ router.get('/api/csrf-token', (req, res) => {
 });
 
 // ============================================================
-// POST /auth/google/callback — Login via Google (proxy para auth-service)
+// POST /auth/google/callback — valida o ID token no Auth Service
 // ============================================================
 
 router.post('/auth/google/callback', async (req, res) => {
+  const { credential } = req.body || {};
+  if (typeof credential !== 'string' || !credential) {
+    return res.status(400).json({ sucesso: false, erro: 'Credencial Google ausente.' });
+  }
+
   try {
     const response = await fetch(`${AUTH_SERVICE_URL}/internal/google-login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify({ credential }),
     });
-
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok || !data.sucesso) {
-      return res.status(response.status).send(`
-        <script>
-          alert("${data.erro || 'Erro ao realizar login com o Google.'}");
-          window.location.href = '/login';
-        </script>
-      `);
+      return res.status(response.status || 401).json({
+        sucesso: false,
+        erro: data.erro || 'Não foi possível autenticar esta conta Google.',
+      });
     }
 
-    const tipoUsuario = data.usuario.tipo;
-    const emailUsuario = data.usuario.email;
-    const perfilAtivo = data.usuario.ativo;
-    const requerConsentimento = data.usuario.requerConsentimento;
-
-    let destino = '/reservas';
-
-    if (tipoUsuario === 'aluno') {
-      if (requerConsentimento === true || perfilAtivo === false) {
-        destino = '/aluno/consentimento.html';
-      } else {
-        destino = '/aluno/';
-      }
-    } else if (tipoUsuario === 'professor') {
-      destino = '/professor/';
-    } else if (tipoUsuario === 'adm') {
-      destino = '/adm/';
+    const usuario = data.usuario;
+    if (!usuario || !usuario.email || !['aluno', 'professor', 'adm'].includes(usuario.tipo)) {
+      return res.status(403).json({
+        sucesso: false,
+        erro: 'Esta conta não possui um perfil institucional autorizado.',
+      });
     }
 
     const user = {
-      id: data.usuario.id || emailUsuario,
-      email: emailUsuario,
-      nome: data.usuario.nome || emailUsuario.split('@')[0],
-      tipo: tipoUsuario,
+      id: usuario.id || usuario.email,
+      email: usuario.email,
+      nome: usuario.nome || usuario.email.split('@')[0],
+      tipo: usuario.tipo,
     };
-    const token = generateJwtToken(user);
-    setJwtCookie(res, token);
+    setJwtCookie(res, generateJwtToken(user));
     setCsrfCookie(res);
 
-    return res.send(`
-      <script>
-        window.location.href = "${destino}";
-      </script>
-    `);
+    let destino = '/inicio/';
+    if (usuario.tipo === 'aluno') {
+      destino = usuario.requerConsentimento || usuario.ativo === false
+        ? '/aluno/consentimento.html'
+        : '/aluno/';
+    } else if (usuario.tipo === 'professor') {
+      destino = '/professor/';
+    } else if (usuario.tipo === 'adm') {
+      destino = '/adm/';
+    }
+
+    return res.json({
+      sucesso: true,
+      usuario: { email: user.email, nome: user.nome, tipo: user.tipo },
+      destino,
+    });
   } catch (error) {
-    console.error('[Gateway] Erro ao comunicar com Auth Service para Google login:', error);
-    return res.status(500).send(`
-      <script>
-        alert("Erro interno de comunicação com o serviço de autenticação do Google.");
-        window.location.href = '/login';
-      </script>
-    `);
+    console.error('[Gateway] Erro ao autenticar via Google:', error);
+    return res.status(503).json({
+      sucesso: false,
+      erro: 'Serviço de autenticação indisponível. Tente novamente.',
+    });
   }
 });
 
