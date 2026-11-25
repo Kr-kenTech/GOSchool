@@ -62,7 +62,7 @@ services:
   # ----------------------------------------
   gateway:
     build:
-      context: ./gateway
+      context: ./Gateway
       dockerfile: Dockerfile
     container_name: goschool-gateway
     ports:
