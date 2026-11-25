@@ -208,29 +208,6 @@ const Auth = (function() {
         }
     }
 
-    // Regular login (form)
-    async function login(email, password) {
-        try {
-            await fetchCsrfToken();
-            const res = await fetch(`${API_BASE}/api/login`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: addCsrfHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (data.sucesso) {
-                currentUser = data.usuario;
-                window.location.reload();
-                return true;
-            }
-            throw new Error(data.erro || 'Login failed');
-        } catch (e) {
-            console.error('[Auth] Login error:', e);
-            throw e;
-        }
-    }
-
     // Initialize auth on page load
     async function init(options = {}) {
         const {
@@ -328,7 +305,6 @@ const Auth = (function() {
         getCurrentUser,
         verifySession,
         requireAuth,
-        login,
         demoLogin,
         logout,
         hasRole,
