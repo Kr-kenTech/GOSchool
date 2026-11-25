@@ -155,53 +155,6 @@ function identificarTipoUsuario(email) {
 }
 
 // ============================================================
-// ENDPOINT INTERNO: VALIDAR CREDENCIAIS DE LOGIN
-// ============================================================
-app.post('/internal/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const pool = await getDb();
-    const [rows] = await pool.query('SELECT * FROM usuario WHERE email = ?', [email]);
-
-    if (rows.length === 0) {
-      return res.status(401).json({ sucesso: false, erro: 'Credenciais inválidas.' });
-    }
-
-    const usuarioEncontrado = rows[0];
-    const tipo = identificarTipoUsuario(email);
-
-    let requerConsentimento = false;
-    let ativo = true;
-
-    if (tipo === 'aluno') {
-      const [alunoRows] = await pool.query('SELECT id FROM aluno WHERE usuario_id = ?', [usuarioEncontrado.id]);
-      if (alunoRows.length > 0) {
-        const alunoId = alunoRows[0].id;
-        const [consRows] = await pool.query('SELECT id FROM consentimento_responsavel WHERE aluno_id = ?', [alunoId]);
-        requerConsentimento = consRows.length === 0;
-        ativo = !requerConsentimento;
-      }
-    }
-
-    return res.json({
-      sucesso: true,
-      usuario: {
-        id: usuarioEncontrado.id,
-        email: usuarioEncontrado.email,
-        nome: usuarioEncontrado.nome,
-        tipo: tipo,
-        ativo: ativo,
-        requerConsentimento: requerConsentimento,
-      },
-    });
-  } catch (error) {
-    console.error('[Auth Service] Erro no login:', error);
-    return res.status(503).json({ sucesso: false, erro: 'Banco de dados indisponível.' });
-  }
-});
-
-// ============================================================
 // ENDPOINT INTERNO: DEMO LOGIN
 // ============================================================
 app.post('/internal/demo-login', (req, res) => {
@@ -236,20 +189,31 @@ app.post('/internal/demo-login', (req, res) => {
 // ENDPOINT INTERNO: GOOGLE LOGIN
 // ============================================================
 app.post('/internal/google-login', async (req, res) => {
-  const { credential, email: emailDireto } = req.body;
-  let email = emailDireto;
+  const { credential } = req.body || {};
+  let email;
 
-  if (!email && credential) {
-    try {
-      const payload = await verifyGoogleIdToken(credential, process.env.GOOGLE_CLIENT_ID);
-      email = payload.email;
-    } catch (err) {
-      console.error('[Auth Service] Erro ao verificar token do Google:', err.message);
-      return res.status(401).json({
+  if (typeof credential !== 'string' || !credential) {
+    return res.status(400).json({
+      sucesso: false,
+      erro: 'Credencial Google ausente.',
+    });
+  }
+
+  try {
+    const payload = await verifyGoogleIdToken(credential, process.env.GOOGLE_CLIENT_ID);
+    if (payload.email_verified !== true) {
+      return res.status(403).json({
         sucesso: false,
-        erro: 'Token do Google inválido: ' + err.message,
+        erro: 'O Google não confirmou este endereço de e-mail.',
       });
     }
+    email = String(payload.email || '').trim().toLowerCase();
+  } catch (err) {
+    console.error('[Auth Service] Erro ao verificar token do Google:', err.message);
+    return res.status(401).json({
+      sucesso: false,
+      erro: 'Não foi possível validar a credencial Google.',
+    });
   }
 
   if (!email) {
