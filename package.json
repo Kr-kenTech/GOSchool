@@ -4,14 +4,14 @@
   "description": "GOSchool - Plataforma de Gestão Escolar (Microsserviços)",
   "private": true,
   "workspaces": [
-    "gateway",
+    "Gateway",
     "auth-service",
     "reservas-service",
     "shared"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=gateway\" \"npm run dev --workspace=auth-service\" \"npm run dev --workspace=reservas-service\"",
-    "dev:gateway": "npm run dev --workspace=gateway",
+    "dev": "concurrently \"npm run dev --workspace=Gateway\" \"npm run dev --workspace=auth-service\" \"npm run dev --workspace=reservas-service\"",
+    "dev:gateway": "npm run dev --workspace=Gateway",
     "dev:auth": "npm run dev --workspace=auth-service",
     "dev:reservas": "npm run dev --workspace=reservas-service",
     "build": "npm run build --workspaces",
@@ -19,7 +19,7 @@
     "stop": "docker-compose down",
     "db:setup": "docker-compose up -d mysql mongo && sleep 10 && docker-compose exec -T mysql mysql -u root -prootpassword banco_goschool < database/mysql/schema.sql && docker-compose exec -T mongo mongosh banco_goschool database/mongo/indexes.js",
     "db:seed": "docker-compose exec -T mysql mysql -u root -prootpassword banco_goschool < database/mysql/seeds/demo-data.sql && docker-compose exec -T mongo mongosh banco_goschool database/mongo/seeds/demo-data.js",
-    "test": "npx jest --projects gateway auth-service reservas-service shared",
+    "test": "npx jest --projects Gateway auth-service reservas-service shared",
     "test:e2e": "playwright test",
     "lint": "npm run lint --workspaces",
     "format": "prettier --write .",
@@ -27,7 +27,7 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "clean": "rm -rf node_modules gateway/node_modules auth-service/node_modules reservas-service/node_modules shared/node_modules"
+    "clean": "rm -rf node_modules Gateway/node_modules auth-service/node_modules reservas-service/node_modules shared/node_modules"
   },
   "devDependencies": {
     "@babel/core": "^8.1.0",
