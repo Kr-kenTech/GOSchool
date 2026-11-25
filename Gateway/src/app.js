@@ -1,21 +1,16 @@
 // ============================================================
 // GATEWAY APP — GOSchool (ESM)
-// Entry point: porta 3000, arquivos estáticos, proxy de API
+// Entry point: porta 3000, arquivos estáticos e rotas da API.
 // ============================================================
 
 import 'dotenv/config';
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import cookieParser from 'cookie-parser';
 
 import config from '@goschool/shared/src/config/index.js';
-import {
-  errorHandler,
-  notFound,
-  dbUnavailable,
-} from './middleware/error.middleware.js';
-
+import { errorHandler, notFound } from './middleware/error.middleware.js';
 import routes from './routes/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,7 +18,6 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const GATEWAY_PORT = config.GATEWAY_PORT;
-const IS_PRODUCTION = config.IS_PRODUCTION;
 
 // ============================================================
 // MIDDLEWARE GLOBAL
@@ -34,14 +28,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ============================================================
-// ARQUIVOS ESTÁTICOS — Frontend em public/
-// Estrutura de subpastas preservada exatamente.
-// URLs padronizadas: lowercase, kebab-case
+// ARQUIVOS ESTÁTICOS — Gateway/public
 // ============================================================
 
-const publicDir = path.join(__dirname, '../../public');
+const publicDir = path.resolve(__dirname, '../public');
 
-// Páginas principais
 app.use('/inicio', express.static(path.join(publicDir, 'Inicio')));
 app.use('/login', express.static(path.join(publicDir, 'Login')));
 app.use('/aluno', express.static(path.join(publicDir, 'Aluno'), { index: 'index.html' }));
@@ -52,15 +43,13 @@ app.use('/reservas', express.static(path.join(publicDir, 'Reservas'), { index: '
 app.use('/configuracoes', express.static(path.join(publicDir, 'Configuracoes'), { index: 'index.html' }));
 app.use('/desperdicio', express.static(path.join(publicDir, 'Desperdicio'), { index: 'index.html' }));
 
-// Arquivos estáticos globais (raiz pública: logo, css, js, etc.)
-app.use(
-  express.static(publicDir, {
-    extensions: ['png', 'jpg', 'jpeg', 'css', 'js', 'mp4'],
-  })
-);
+// Arquivos globais: logo, CSS, JavaScript e mídia.
+app.use(express.static(publicDir, {
+  extensions: ['html', 'png', 'jpg', 'jpeg', 'css', 'js', 'mp4'],
+}));
 
-// Redirecionar raiz para /inicio
-app.get('/', (req, res) => {
+// Raiz do site.
+app.get('/', (_req, res) => {
   res.redirect('/inicio');
 });
 
@@ -74,7 +63,7 @@ routes(app);
 // HEALTH CHECK
 // ============================================================
 
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     service: 'gateway',
@@ -85,10 +74,12 @@ app.get('/health', (req, res) => {
 
 app.get('/internal/health', (req, res) => {
   const apiKey = req.headers['x-internal-api-key'];
-  if (apiKey !== config.INTERNAL_API_KEY) {
+
+  if (!config.INTERNAL_API_KEY || apiKey !== config.INTERNAL_API_KEY) {
     return res.status(401).json({ status: 'unauthorized' });
   }
-  res.json({
+
+  return res.json({
     status: 'ok',
     service: 'gateway',
     timestamp: new Date().toISOString(),
@@ -100,21 +91,23 @@ app.get('/internal/health', (req, res) => {
 // TRATAMENTO DE ERROS
 // ============================================================
 
-// 404 para rotas não encontradas
 app.use(notFound);
-
-// Handler global de erros (deve ser o último middleware)
 app.use(errorHandler);
 
 export default app;
 
 // ============================================================
-// INICIAR SERVIDOR (apenas quando executado diretamente)
+// INICIAR SERVIDOR APENAS QUANDO EXECUTADO DIRETAMENTE
+// Compatível com Windows e Linux.
 // ============================================================
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const invokedPath = process.argv[1]
+  ? pathToFileURL(path.resolve(process.argv[1])).href
+  : null;
+
+if (invokedPath === import.meta.url) {
   app.listen(GATEWAY_PORT, config.GATEWAY_HOST, () => {
-    console.log(`[Gateway] Rodando na porta ${GATEWAY_PORT}`);
+    console.log(`[Gateway] Rodando em http://localhost:${GATEWAY_PORT}`);
     console.log(`[Gateway] Auth Service: ${config.AUTH_SERVICE_URL}`);
     console.log(`[Gateway] Reservas Service: ${config.RESERVAS_SERVICE_URL}`);
     console.log(`[Gateway] Demo Mode: ${config.DEMO_MODE ? 'ON' : 'OFF'}`);
